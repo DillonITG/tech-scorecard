@@ -238,10 +238,10 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   .sc-qc-pbtn:hover { border-color: var(--sc-c1); }
   .sc-qc-pbtn:focus-visible { outline: 2px solid var(--cds-chart-axis); outline-offset: 2px; }
   .sc-qc-pbtn svg { width: 14px; height: 14px; }
-  .sc-show { margin-top: var(--cds-gap-lg); }
+  .sc-show { margin: var(--cds-gap-lg) auto 0; width: 100%; max-width: 520px; }
   .sc-show-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; }
   .sc-show-head h2 { margin: 0; }
-  .sc-show-frame { position: relative; border-radius: var(--cds-radius); overflow: hidden; background: #0d0f13; aspect-ratio: 16 / 10; max-height: 560px; width: 100%; touch-action: pan-y; }
+  .sc-show-frame { position: relative; border-radius: var(--cds-radius); overflow: hidden; background: #0d0f13; aspect-ratio: 3 / 4; max-height: 78vh; width: 100%; touch-action: pan-y; }
   .sc-show-slides { display: flex; height: 100%; transition: transform .45s ease; }
   .sc-show-slide { flex: 0 0 100%; height: 100%; display: grid; place-items: center; cursor: zoom-in; border: 0; padding: 0; background: none; }
   .sc-show-slide img { width: 100%; height: 100%; object-fit: contain; display: block; }
