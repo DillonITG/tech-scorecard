@@ -196,6 +196,24 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   .sc-tile svg { display: block; width: 100%; height: 26px; overflow: visible; }
   .sc-tile .cap { display: flex; flex-wrap: wrap; gap: 2px 10px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
   .sc-tile .cap i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; vertical-align: baseline; }
+  .sc-span { display: grid; gap: 6px; padding: var(--cds-pad-sm); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-panel); }
+  .sc-span .top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; }
+  .sc-span .k { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .sc-span .read { font-weight: var(--cds-font-weight-medium); font-variant-numeric: tabular-nums; }
+  .sc-span .read .n { color: var(--color-fg-muted); font-weight: normal; margin-left: 8px; }
+  .sc-span .track { position: relative; height: 28px; }
+  .sc-span .rail, .sc-span .fill { position: absolute; top: 11px; height: 6px; border-radius: 3px; }
+  .sc-span .rail { left: 0; right: 0; background: var(--cds-chart-grid); }
+  .sc-span .fill { right: 0; background: var(--sc-accent); }
+  .sc-span input[type=range] { position: absolute; inset: 0; width: 100%; margin: 0; background: transparent; -webkit-appearance: none; appearance: none; cursor: pointer; }
+  .sc-span input[type=range]::-webkit-slider-runnable-track { background: transparent; height: 28px; }
+  .sc-span input[type=range]::-moz-range-track { background: transparent; }
+  .sc-span input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; margin-top: 4px; border-radius: 50%; background: var(--color-panel); border: 3px solid var(--sc-accent); box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+  .sc-span input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--color-panel); border: 3px solid var(--sc-accent); }
+  .sc-span input[type=range]:focus-visible { outline: 2px solid var(--sc-accent); outline-offset: 2px; border-radius: 6px; }
+  .sc-span .ticks { position: relative; height: 16px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .sc-span .ticks span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+  .sc-span .ticks span.on { color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
   .sc-needs { margin: 0; font-size: var(--cds-font-size-body); }
   .sc-notes { margin: 0; padding: 0; list-style: none; display: grid; gap: var(--cds-gap-xs); font-size: var(--cds-font-size-body); }
   .sc-notes li { display: grid; grid-template-columns: 6.5rem 1fr; gap: var(--cds-gap-sm); border-bottom: 1px solid var(--color-border-line); padding-block: var(--cds-pad-xs); }
@@ -420,7 +438,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
         </div>
         <select class="dash-select" id="sc-techpick" data-draw="techpick" data-source="tech_table" aria-label="Tech"></select>
       </div>
-      <div class="sc-facts" data-draw="facts" data-source="tech_table team_now"></div>
+      <div class="sc-span" data-draw="span" data-source="tech_periods"></div>
+      <div class="sc-facts" data-draw="facts" data-source="tech_table team_now tech_periods"></div>
       <p class="sc-needs" data-draw="needs" data-source="tech_table">—</p>
       <div class="sc-legend"><span><i data-draw="swatch" data-which="tech"></i>Selected tech</span><span><i data-draw="swatch" data-which="team"></i>Team</span><span><i class="dash"></i>Target</span><span><i class="mark"></i>Coaching note</span></div>
       <div class="sc-detail-grid">
@@ -495,6 +514,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     sort: { col: 'misses', dir: 'descending' },
     query: '',
     heat: 'ftr',
+    span: 1,
     page: 'overview'
   };
 
@@ -513,6 +533,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
           jobs: n(r.total_jobs), installs: n(r.installs), tcs: n(r.tcs), sros: n(r.sros),
           promoters: n(r.promoters), detractors: n(r.detractors), tnps_surveys: s,
           ftr_total: n(r.ftr_total_jobs), ftr_fail: n(r.ftr_fail_jobs),
+          repeat_n: n(r.repeat_count), met_n: n(r.met_appts), appts: n(r.total_appts),
           tu, tnps, ftr,
           repeat: rate(n(r.repeat_count), n(r.tcs)), rework: rate(n(r.rework_count), n(r.installs) + n(r.tcs)),
           pht: rate(n(r.pht_jobs) - n(r.pht_fails), n(r.pht_jobs)), met: rate(n(r.met_appts), n(r.total_appts)),
@@ -948,11 +969,65 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     if (SC.picked) sel.value = SC.picked;
     sel.onchange = () => pickTech(sel.value);
   });
+  /* Timeframe slider: pick how many fiscal months, ending with the latest, the tiles add up. */
+  const spanMonths = () => { const d = dash.data('tech_periods'); return d.status === 'ok' ? [...new Map(d.data.map((r) => [r.period_start, r.period_label])).entries()].sort((a, b) => a[0] < b[0] ? -1 : 1) : []; };
+  dash.draw('span', (el) => {
+    el.replaceChildren(); el.style.setProperty('--sc-accent', dash.colors[0]);
+    const ms = spanMonths(); if (!ms.length) return;
+    const N = ms.length; SC.span = Math.min(Math.max(1, SC.span || 1), N);
+    const mk = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+    const top = mk('div', 'top'); const lab = mk('span', 'k', 'Timeframe'); const read = mk('span', 'read');
+    const rTxt = mk('span'), rN = mk('span', 'n'); read.append(rTxt, rN); top.append(lab, read);
+    const track = mk('div', 'track'); const rail = mk('div', 'rail'), fill = mk('div', 'fill');
+    const inp = mk('input'); inp.type = 'range'; inp.min = 0; inp.max = N - 1; inp.step = 1; inp.setAttribute('aria-label', 'Timeframe');
+    track.append(rail, fill, inp);
+    const ticks = mk('div', 'ticks'); const tk = ms.map(([, l]) => { const t = mk('span', null, l.slice(0, 3)); ticks.appendChild(t); return t; });
+    const hint = mk('span', 'k', 'Slide left to look further back.');
+    el.append(top, track, ticks, hint);
+    const place = () => {
+      const w = inp.getBoundingClientRect().width || 1, th = 20, pct = (i) => ((th / 2) + (N === 1 ? 0 : i / (N - 1)) * (w - th)) / w * 100;
+      const start = N - SC.span; inp.value = start;
+      fill.style.left = pct(start) + '%'; fill.style.right = (100 - pct(N - 1)) + '%';
+      tk.forEach((t, i) => { t.style.left = pct(i) + '%'; t.classList.toggle('on', i >= start); });
+      rTxt.textContent = SC.span === 1 ? ms[N - 1][1] : ms[start][1] + ' – ' + ms[N - 1][1];
+      rN.textContent = SC.span === 1 ? '1 month' : SC.span + ' months';
+      inp.setAttribute('aria-valuetext', rTxt.textContent);
+    };
+    inp.oninput = () => { SC.span = N - +inp.value; place(); dash.draw('facts'); };
+    requestAnimationFrame(place); place();
+  });
+  /* Add a tech's months together and work out the rates from the totals. */
+  const compile = (rows) => {
+    const sum = (k) => rows.reduce((a, r) => a + (r[k] || 0), 0);
+    const rate = (a, b) => b > 0 ? Math.round(1000 * a / b) / 10 : null;
+    const mix = sum('installs') + sum('tcs') + sum('sros');
+    return { jobs: sum('jobs'), install_share: rate(sum('installs'), mix) ?? 0, tc_share: rate(sum('tcs'), mix) ?? 0, sro_share: rate(sum('sros'), mix) ?? 0,
+      ftr: rate(sum('ftr_total') - sum('ftr_fail'), sum('ftr_total')), ftr_total: sum('ftr_total'), ftr_fail: sum('ftr_fail'), installs: sum('installs'), tcs: sum('tcs'), sros: sum('sros'),
+      promoters: sum('promoters'), detractors: sum('detractors'), surveys: sum('tnps_surveys'),
+      repeat: rate(sum('repeat_n'), sum('tcs')), met: rate(sum('met_n'), sum('appts')), months: new Set(rows.map((r) => r.period_start)).size };
+  };
+  const spanView = (row, k) => {
+    const tp = dash.data('tech_periods'), tt = dash.data('tech_table'); if (tp.status !== 'ok' || tt.status !== 'ok') return null;
+    const ps = [...new Set(tp.data.map((r) => r.period_start))].sort(), win = ps.slice(-k), win3 = ps.slice(-Math.max(k, 3));
+    const rate = (a, b) => b > 0 ? Math.round(1000 * a / b) / 10 : null;
+    const of = (id, w) => tp.data.filter((r) => r.tech_id === id && w.includes(r.period_start));
+    const me = compile(of(row.tech_id, win)), me3 = compile(of(row.tech_id, win3));
+    const roster = tt.data.map((r) => compile(of(r.tech_id, win))).filter((c) => c.jobs > 0);
+    const all = compile(tp.data.filter((r) => win.includes(r.period_start) && tt.data.some((t) => t.tech_id === r.tech_id)));
+    const all3 = compile(tp.data.filter((r) => win3.includes(r.period_start) && tt.data.some((t) => t.tech_id === r.tech_id)));
+    const avg = (k2) => { const v = roster.map((c) => c[k2]).filter((x) => x != null); return v.length ? Math.round(10 * v.reduce((a, b) => a + b, 0) / v.length) / 10 : null; };
+    const r = Object.assign({}, row, me, { away: false, tnps_3mo: rate(me3.promoters - me3.detractors, me3.surveys), tnps_3mo_surveys: me3.surveys });
+    const t = { avg_jobs: roster.length ? Math.round(roster.reduce((a, c) => a + c.jobs, 0) / roster.length) : 0, max_jobs: Math.max(0, ...roster.map((c) => c.jobs)),
+      install_share: all.install_share, ftr: all.ftr, tnps_3mo: rate(all3.promoters - all3.detractors, all3.surveys), repeat: avg('repeat'), met: avg('met') };
+    return { r, t, tnpsMonths: Math.max(k, 3), worked: me.months };
+  };
   dash.draw('facts', (el) => {
     el.replaceChildren();
-    const r = pickedRow(); const tn = dash.data('team_now');
+    let r = pickedRow(); const tn = dash.data('team_now');
     if (!r || tn.status !== 'ok' || !tn.data[0]) return;
-    const t = tn.data[0], C = dash.colors[0], BAD = 'var(--cds-chart-status-critical)';
+    let t = tn.data[0]; const C = dash.colors[0], BAD = 'var(--cds-chart-status-critical)';
+    const K = SC.span || 1; let tnpsMonths = 3, worked = 1;
+    if (K > 1) { const v = spanView(r, K); if (v) { r = v.r; t = v.t; tnpsMonths = v.tnpsMonths; worked = v.worked; } }
     const mk = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
     const svgEl = (name, attrs, parent) => { const e = document.createElementNS('http://www.w3.org/2000/svg', name); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
     const tile = (label, value, opts = {}) => {
@@ -975,9 +1050,9 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     const range = (vals, floorTo) => { const ok = vals.filter((v) => v != null); return Math.max(0, Math.floor(Math.min(...ok) - floorTo)); };
 
     // Jobs
-    { const d = tile('Jobs this month', r.away ? '—' : d3.format(',')(r.jobs), { tag: r.away ? null : (r.jobs >= t.avg_jobs ? 'Above team avg' : 'Below team avg') });
+    { const d = tile(K > 1 ? 'Jobs, last ' + K + ' months' : 'Jobs this month', r.away ? '—' : d3.format(',')(r.jobs), { tag: r.away ? null : (r.jobs >= t.avg_jobs ? 'Above team avg' : 'Below team avg') });
       bullet(d, r.away ? 0 : r.jobs, { lo: 0, hi: Math.max(t.max_jobs, r.jobs, 1), team: t.avg_jobs });
-      cap(d, ['▲ Team avg ' + t.avg_jobs]); el.appendChild(d); }
+      cap(d, ['▲ Team avg ' + d3.format(',')(t.avg_jobs), K > 1 && worked ? '≈ ' + Math.round(r.jobs / worked) + ' a month' : null, K > 1 && worked < K ? 'Worked ' + worked + ' of ' + K + ' months' : null]); el.appendChild(d); }
     // Job mix
     { const d = tile('Job mix', SC.pct(r.tc_share), { tag: 'Trouble calls' });
       const W = 200, svg = svgEl('svg', { viewBox: `0 0 ${W} 26`, preserveAspectRatio: 'none', 'aria-hidden': 'true' }, d);
@@ -993,7 +1068,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       cap(d, ['▲ Team ' + SC.pct(t.ftr), 'Target ' + SC.tgt(SC.T.ftr), from]); el.appendChild(d); }
     // tNPS 3 months
     { const bad = r.tnps_3mo != null && r.tnps_3mo < SC.T.tnps;
-      const d = tile('tNPS, last 3 months', SC.pct(r.tnps_3mo), { bad, tag: r.tnps_3mo_surveys + ' surveys' });
+      const d = tile(tnpsMonths > 3 ? 'tNPS, last ' + tnpsMonths + ' months' : 'tNPS, last 3 months', SC.pct(r.tnps_3mo), { bad, tag: r.tnps_3mo_surveys + ' surveys' });
       bullet(d, r.tnps_3mo, { lo: range([r.tnps_3mo, t.tnps_3mo, SC.T.tnps], 15), hi: 100, team: t.tnps_3mo, target: SC.T.tnps, bad });
       cap(d, ['▲ Team ' + SC.pct(t.tnps_3mo), 'Target ' + SC.tgt(SC.T.tnps)]); el.appendChild(d); }
     // Repeat rate (lower is better)
@@ -1229,7 +1304,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     'Top tech · last 30 days ·': 'Mejor técnico · últimos 30 días ·', 'No winner this period': 'Sin ganador este periodo',
     'Top tech of the last 30 days': 'Mejor técnico de los últimos 30 días',
     'No tech met all three targets with at least 40 jobs over the last 30 days.': 'Ningún técnico cumplió las tres metas con al menos 40 trabajos en los últimos 30 días.',
-    'Lines mark where a new fiscal month starts. A week that crosses the 22nd goes with the month that has most of its days.': 'Las líneas marcan dónde empieza un nuevo mes fiscal. Una semana que cruza el día 22 va con el mes que tiene la mayoría de sus días.', 'tNPS, last 3 months': 'tNPS, últimos 3 meses',
+    'Lines mark where a new fiscal month starts. A week that crosses the 22nd goes with the month that has most of its days.': 'Las líneas marcan dónde empieza un nuevo mes fiscal. Una semana que cruza el día 22 va con el mes que tiene la mayoría de sus días.', 'tNPS, last 3 months': 'tNPS, últimos 3 meses', 'Timeframe': 'Período', 'Slide left to look further back.': 'Desliza a la izquierda para ver más atrás.', '1 month': '1 mes',
     'Color theme': 'Tema de color', 'Language': 'Idioma', 'Scorecard pages': 'Páginas del tablero', 'no data': 'sin datos'
   };
   const date = (s) => s.replace(/\b([A-Z][a-z]{2}) (\d{1,2}), (\d{4})\b/g, (_, m, d, y) => `${d} ${mo(m)} ${y}`);
@@ -1250,6 +1325,12 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     [/^Tech (\w+)$/, (m) => `Técnico ${m[1]}`],
     [/^Installs ([\d.]+)%, trouble calls ([\d.]+)%, SROs ([\d.]+)%$/, (m) => `Instalaciones ${m[1]}%, llamadas de servicio ${m[2]}%, SRO ${m[3]}%`],
     [/^tNPS, last 3 months \((\d+) surveys\)$/, (m) => `tNPS, últimos 3 meses (${m[1]} encuestas)`],
+    [/^Jobs, last (\d+) months$/, (m) => `Trabajos, últimos ${m[1]} meses`],
+    [/^tNPS, last (\d+) months$/, (m) => `tNPS, últimos ${m[1]} meses`],
+    [/^(\d+) months$/, (m) => `${m[1]} meses`],
+    [/^≈ (\d+) a month$/, (m) => `≈ ${m[1]} al mes`],
+    [/^Worked (\d+) of (\d+) months$/, (m) => `Trabajó ${m[1]} de ${m[2]} meses`],
+    [/^(.+ FM(?: \(to date\))?) – (.+ FM(?: \(to date\))?)$/, (m) => label(m[1]) && label(m[2]) ? `${label(m[1])} – ${label(m[2])}` : null],
     [/^(\d+) surveys$/, (m) => `${m[1]} encuestas`],
     [/^▲ Team avg (.+)$/, (m) => `▲ Promedio del equipo ${m[1]}`],
     [/^▲ Team installs (.+)$/, (m) => `▲ Instalaciones del equipo ${m[1]}`],
