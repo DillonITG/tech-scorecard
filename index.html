@@ -182,10 +182,20 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   .sc-legend i.mark { width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 8px solid var(--color-warn); background: none; }
   .sc-detail-grid { display: grid; gap: var(--cds-gap-md); grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); }
   .sc-detail-grid h4 { margin: 0 0 var(--cds-gap-xs); font-size: var(--cds-font-size-caption); font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); }
-  .sc-facts { display: flex; gap: var(--cds-gap-lg); flex-wrap: wrap; }
-  .sc-fact { display: grid; gap: 2px; min-width: 7rem; }
-  .sc-fact .v { font-family: var(--font-anthropic-serif); font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; }
-  .sc-fact .k { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .sc-facts { display: grid; gap: var(--cds-gap-sm); grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  @media (max-width: 52rem) { .sc-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 30rem) { .sc-facts { grid-template-columns: 1fr; } }
+  .sc-tile { border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-sm) var(--cds-pad-sm) var(--cds-pad-xs); display: grid; gap: 4px; min-width: 0; align-content: start; }
+  .sc-tile .k { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .sc-tile .row { display: flex; align-items: baseline; justify-content: space-between; gap: var(--cds-gap-sm); }
+  .sc-tile .v { font-family: var(--font-anthropic-serif); font-size: calc(var(--cds-font-size-title) * .9); line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .sc-tile .v.bad { color: var(--color-bad); }
+  .sc-tile .tag { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); white-space: nowrap; }
+  .sc-tile .tag.bad { color: var(--color-bad); }
+  .sc-tile .tag.good { color: var(--color-ok); }
+  .sc-tile svg { display: block; width: 100%; height: 26px; overflow: visible; }
+  .sc-tile .cap { display: flex; flex-wrap: wrap; gap: 2px 10px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+  .sc-tile .cap i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; vertical-align: baseline; }
   .sc-needs { margin: 0; font-size: var(--cds-font-size-body); }
   .sc-notes { margin: 0; padding: 0; list-style: none; display: grid; gap: var(--cds-gap-xs); font-size: var(--cds-font-size-body); }
   .sc-notes li { display: grid; grid-template-columns: 6.5rem 1fr; gap: var(--cds-gap-sm); border-bottom: 1px solid var(--color-border-line); padding-block: var(--cds-pad-xs); }
@@ -201,6 +211,9 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   .sc-heat td.na { background: color-mix(in srgb, var(--color-fg) 4%, transparent); color: var(--color-fg-muted); }
   .sc-heat td.low { opacity: .55; }
   .sc-heat tr.team th, .sc-heat tr.team td { border-top: 1px solid var(--color-border-line); }
+  .sc-heat th.fm { text-align: left; color: var(--color-fg); font-size: var(--cds-font-size-caption); font-weight: var(--cds-font-weight-medium); border-bottom: 2px solid var(--color-border-line); padding: 2px 6px; }
+  .sc-heat th, .sc-heat td { position: relative; }
+  .sc-heat .fmstart::before { content: ""; position: absolute; left: -4px; top: -3px; bottom: -3px; width: 2px; background: var(--color-fg-muted); border-radius: 1px; }
   .sc-empty { margin: 0; color: var(--color-fg-muted); font-size: var(--cds-font-size-body); }
   .sc details { font-size: var(--cds-font-size-body); color: var(--color-fg-muted); }
   .sc details summary { cursor: pointer; color: var(--color-fg); }
@@ -368,7 +381,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
         </div>
         <select class="dash-select" id="sc-techpick" data-draw="techpick" data-source="tech_table" aria-label="Tech"></select>
       </div>
-      <div class="sc-facts" data-draw="facts" data-source="tech_table"></div>
+      <div class="sc-facts" data-draw="facts" data-source="tech_table team_now"></div>
       <p class="sc-needs" data-draw="needs" data-source="tech_table">—</p>
       <div class="sc-legend"><span><i data-draw="swatch" data-which="tech"></i>Selected tech</span><span><i data-draw="swatch" data-which="team"></i>Team</span><span><i class="dash"></i>Target</span><span><i class="mark"></i>Coaching note</span></div>
       <div class="sc-detail-grid">
@@ -401,6 +414,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
         <div>
           <h2>Each tech by week</h2>
           <p class="sc-note">Green meets target, amber is close, red is below. Faded cells had too few jobs or surveys to judge.</p>
+          <p class="sc-note">Lines mark where a new fiscal month starts. A week that crosses the 22nd goes with the month that has most of its days.</p>
         </div>
         <select class="dash-select" id="sc-heatmetric" aria-label="Metric">
           <option value="ftr">FTR</option>
@@ -563,6 +577,28 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     }
   });
 
+  dash.calc('team_now', {
+    inputs: ['tech_periods'],
+    title: 'Team this month, for comparison',
+    description: 'The team’s job mix, average jobs per tech and rates for the latest fiscal month, plus the 3-month tNPS, to compare a tech against.',
+    fn: (tech_periods) => {
+      const ps = [...new Set(tech_periods.map((r) => r.period_start))].sort();
+      const last = ps[ps.length - 1], rows = tech_periods.filter((r) => r.period_start === last), three = tech_periods.filter((r) => ps.slice(-3).includes(r.period_start));
+      const sum = (arr, k) => arr.reduce((a, r) => a + (r[k] || 0), 0);
+      const rate = (a, b) => b > 0 ? Math.round(1000 * a / b) / 10 : null;
+      const mix = sum(rows, 'installs') + sum(rows, 'tcs') + sum(rows, 'sros');
+      const avgOf = (k) => { const v = rows.map((r) => r[k]).filter((x) => x != null); return v.length ? Math.round(10 * v.reduce((a, b) => a + b, 0) / v.length) / 10 : null; };
+      return [{
+        period_label: rows[0] ? rows[0].period_label : '', techs: rows.length,
+        avg_jobs: rows.length ? Math.round(sum(rows, 'jobs') / rows.length) : 0, max_jobs: Math.max(0, ...rows.map((r) => r.jobs)),
+        install_share: rate(sum(rows, 'installs'), mix), tc_share: rate(sum(rows, 'tcs'), mix), sro_share: rate(sum(rows, 'sros'), mix),
+        ftr: rate(sum(rows, 'ftr_total') - sum(rows, 'ftr_fail'), sum(rows, 'ftr_total')),
+        tnps_3mo: rate(sum(three, 'promoters') - sum(three, 'detractors'), sum(three, 'tnps_surveys')),
+        repeat: avgOf('repeat'), met: avgOf('met')
+      }];
+    }
+  });
+
   dash.calc('watch', {
     inputs: ['tech_periods'],
     title: 'Missed the same target two months running',
@@ -602,18 +638,25 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   dash.calc('weekly_team', {
     inputs: ['weekly'],
     title: 'Team by week',
-    description: 'Adds each week’s counts across techs, then works out FTR, tNPS and repeat rate.',
+    description: 'Adds each week’s counts across techs, then works out FTR, tNPS and repeat rate. Each week is grouped with the fiscal month that holds most of its days.',
     fn: (weekly) => {
       const n = (v) => +v || 0;
       const rate = (a, b) => b > 0 ? Math.round(1000 * a / b) / 10 : null;
       const by = new Map();
       for (const r of weekly) {
-        const a = by.get(r.period_start) || { period_start: r.period_start, period_label: r.period_label, ft: 0, ff: 0, p: 0, d: 0, s: 0, rep: 0, tcs: 0 };
+        const a = by.get(r.period_start) || { period_start: r.period_start, period_end: r.period_end, period_label: r.period_label, ft: 0, ff: 0, p: 0, d: 0, s: 0, rep: 0, tcs: 0 };
         a.ft += n(r.ftr_total_jobs); a.ff += n(r.ftr_fail_jobs); a.p += n(r.promoters); a.d += n(r.detractors); a.s += n(r.tnps_surveys); a.rep += n(r.repeat_count); a.tcs += n(r.tcs);
         by.set(r.period_start, a);
       }
+      const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const fmOf = (dt) => { const m = dt.getUTCDate() >= 22 ? (dt.getUTCMonth() + 1) % 12 : dt.getUTCMonth(); return MON[m] + ' FM'; };
+      const fiscal = (start, end) => {
+        const counts = new Map();
+        for (let d = new Date(start + 'T00:00:00Z'); d <= new Date(end + 'T00:00:00Z'); d = new Date(d.getTime() + 86400000)) { const f = fmOf(d); counts.set(f, (counts.get(f) || 0) + 1); }
+        return [...counts.entries()].sort((x, y) => y[1] - x[1])[0][0];
+      };
       return [...by.values()].sort((a, b) => a.period_start < b.period_start ? -1 : 1).map((a) => ({
-        period_start: a.period_start, period_label: a.period_label,
+        period_start: a.period_start, period_end: a.period_end, period_label: a.period_label, fiscal_month: fiscal(a.period_start, a.period_end),
         ftr: rate(a.ft - a.ff, a.ft), tnps: rate(a.p - a.d, a.s), repeat: rate(a.rep, a.tcs), ftr_jobs: a.ft, surveys: a.s
       }));
     }
@@ -837,15 +880,62 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   });
   dash.draw('facts', (el) => {
     el.replaceChildren();
-    const r = pickedRow(); if (!r) return;
-    const facts = [
-      [d3.format(',')(r.jobs), 'Jobs this month'],
-      [SC.pct(r.install_share) + ' / ' + SC.pct(r.tc_share), 'Installs / trouble calls'],
-      [SC.pct(r.tnps_3mo), 'tNPS, last 3 months (' + r.tnps_3mo_surveys + ' surveys)'],
-      [SC.pct(r.repeat), 'Repeat rate'],
-      [SC.pct(r.met), 'Appointments met']
-    ];
-    for (const [v, k] of facts) { const f = document.createElement('div'); f.className = 'sc-fact'; const a = document.createElement('span'); a.className = 'v'; a.textContent = v; const b = document.createElement('span'); b.className = 'k'; b.textContent = k; f.append(a, b); el.appendChild(f); }
+    const r = pickedRow(); const tn = dash.data('team_now');
+    if (!r || tn.status !== 'ok' || !tn.data[0]) return;
+    const t = tn.data[0], C = dash.colors[0], BAD = 'var(--cds-chart-status-critical)';
+    const mk = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+    const svgEl = (name, attrs, parent) => { const e = document.createElementNS('http://www.w3.org/2000/svg', name); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+    const tile = (label, value, opts = {}) => {
+      const d = mk('div', 'sc-tile'); d.appendChild(mk('span', 'k', label));
+      const row = mk('div', 'row'); row.appendChild(mk('span', 'v' + (opts.bad ? ' bad' : ''), value));
+      if (opts.tag) row.appendChild(mk('span', 'tag ' + (opts.tagCls || ''), opts.tag));
+      d.appendChild(row); return d;
+    };
+    /* Bullet bar: fill to the tech's value, a dashed target line, a triangle for the team. */
+    const bullet = (d, v, { lo, hi, team, target, bad }) => {
+      const W = 200, svg = svgEl('svg', { viewBox: `0 0 ${W} 26`, preserveAspectRatio: 'none', 'aria-hidden': 'true' }, d);
+      const x = (n) => Math.max(0, Math.min(W, (n - lo) / (hi - lo) * W));
+      svgEl('rect', { x: 0, y: 11, width: W, height: 9, rx: 4.5, fill: 'var(--cds-chart-grid)' }, svg);
+      if (v != null) svgEl('rect', { x: 0, y: 11, width: Math.max(4, x(v)), height: 9, rx: 4.5, fill: bad ? BAD : C }, svg);
+      if (target != null) svgEl('line', { x1: x(target), x2: x(target), y1: 7, y2: 24, stroke: 'var(--cds-chart-reference)', 'stroke-width': 2, 'stroke-dasharray': '3 2', 'vector-effect': 'non-scaling-stroke' }, svg);
+      if (team != null) svgEl('path', { d: `M${x(team) - 5},1 L${x(team) + 5},1 L${x(team)},9 Z`, fill: 'var(--color-fg-muted)' }, svg);
+    };
+    const cap = (d, parts) => { const c = mk('div', 'cap'); parts.filter(Boolean).forEach((p) => c.appendChild(typeof p === 'string' ? mk('span', null, p) : p)); d.appendChild(c); };
+    const from = r.away ? 'From ' + r.last_label : null;
+    const range = (vals, floorTo) => { const ok = vals.filter((v) => v != null); return Math.max(0, Math.floor(Math.min(...ok) - floorTo)); };
+
+    // Jobs
+    { const d = tile('Jobs this month', r.away ? '—' : d3.format(',')(r.jobs), { tag: r.away ? null : (r.jobs >= t.avg_jobs ? 'Above team avg' : 'Below team avg') });
+      bullet(d, r.away ? 0 : r.jobs, { lo: 0, hi: Math.max(t.max_jobs, r.jobs, 1), team: t.avg_jobs });
+      cap(d, ['▲ Team avg ' + t.avg_jobs]); el.appendChild(d); }
+    // Job mix
+    { const d = tile('Job mix', SC.pct(r.tc_share), { tag: 'Trouble calls' });
+      const W = 200, svg = svgEl('svg', { viewBox: `0 0 ${W} 26`, preserveAspectRatio: 'none', 'aria-hidden': 'true' }, d);
+      let x0 = 0; [r.install_share, r.tc_share, r.sro_share].forEach((v, i) => { const w = (v || 0) / 100 * W; if (w > 0) svgEl('rect', { x: x0, y: 11, width: w, height: 9, fill: mixColors()[i] }, svg); x0 += w; });
+      const tx = (t.install_share || 0) / 100 * W; svgEl('path', { d: `M${tx - 5},1 L${tx + 5},1 L${tx},9 Z`, fill: 'var(--color-fg-muted)' }, svg);
+      const sw = (i, text) => { const s = mk('span'); const k = mk('i'); k.style.background = mixColors()[i]; s.append(k, document.createTextNode(text)); return s; };
+      cap(d, [sw(0, 'Installs ' + SC.pct(r.install_share)), sw(1, 'Trouble calls ' + SC.pct(r.tc_share)), sw(2, 'SROs ' + SC.pct(r.sro_share)), '▲ Team installs ' + SC.pct(t.install_share), from]);
+      el.appendChild(d); }
+    // FTR
+    { const bad = r.ftr < SC.T.ftr;
+      const d = tile('FTR', SC.pct(r.ftr), { bad, tag: bad ? 'Below target' : 'On target', tagCls: bad ? 'bad' : 'good' });
+      bullet(d, r.ftr, { lo: range([r.ftr, t.ftr, SC.T.ftr], 12), hi: 100, team: t.ftr, target: SC.T.ftr, bad });
+      cap(d, ['▲ Team ' + SC.pct(t.ftr), 'Target ' + SC.tgt(SC.T.ftr), from]); el.appendChild(d); }
+    // tNPS 3 months
+    { const bad = r.tnps_3mo != null && r.tnps_3mo < SC.T.tnps;
+      const d = tile('tNPS, last 3 months', SC.pct(r.tnps_3mo), { bad, tag: r.tnps_3mo_surveys + ' surveys' });
+      bullet(d, r.tnps_3mo, { lo: range([r.tnps_3mo, t.tnps_3mo, SC.T.tnps], 15), hi: 100, team: t.tnps_3mo, target: SC.T.tnps, bad });
+      cap(d, ['▲ Team ' + SC.pct(t.tnps_3mo), 'Target ' + SC.tgt(SC.T.tnps)]); el.appendChild(d); }
+    // Repeat rate (lower is better)
+    { const gap = r.repeat != null && t.repeat != null ? r.repeat - t.repeat : 0, bad = gap > 1, good = gap < -1;
+      const d = tile('Repeat rate', SC.pct(r.repeat), { bad, tag: bad ? 'Worse than team' : good ? 'Better than team' : 'In line with team', tagCls: bad ? 'bad' : good ? 'good' : '' });
+      bullet(d, r.repeat, { lo: 0, hi: Math.max(15, Math.ceil(((r.repeat || 0) + 2) / 5) * 5, Math.ceil(((t.repeat || 0) + 2) / 5) * 5), team: t.repeat, bad });
+      cap(d, ['▲ Team avg ' + SC.pct(t.repeat), 'Lower is better', from]); el.appendChild(d); }
+    // Appointments met
+    { const gap = r.met != null && t.met != null ? r.met - t.met : 0, bad = gap < -1, good = gap > 1;
+      const d = tile('Appointments met', SC.pct(r.met), { bad, tag: bad ? 'Worse than team' : good ? 'Better than team' : 'In line with team', tagCls: bad ? 'bad' : good ? 'good' : '' });
+      bullet(d, r.met, { lo: range([r.met, t.met], 12), hi: 100, team: t.met, bad });
+      cap(d, ['▲ Team avg ' + SC.pct(t.met), from]); el.appendChild(d); }
   });
   dash.draw('needs', (el) => {
     const r = pickedRow(); if (!r) { el.textContent = '—'; return; }
@@ -909,9 +999,20 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       if (k === 'repeat') return v <= 5 ? 'ok' : v <= 10 ? 'warn' : 'bad';
       return v >= T ? 'ok' : v >= T - (k === 'tnps' ? 5 : 3) ? 'warn' : 'bad';
     };
-    const table = document.createElement('table'); const thead = document.createElement('thead'); const hr = document.createElement('tr');
+    const fms = team.map((w) => w.fiscal_month);
+    const starts = new Set(fms.map((f, i) => (i > 0 && f !== fms[i - 1]) ? i : -1).filter((i) => i > 0));
+    const rng = (w) => d3.utcFormat('%b %-d')(new Date(w.period_start + 'T00:00:00Z')) + ' – ' + d3.utcFormat('%b %-d')(new Date(w.period_end + 'T00:00:00Z'));
+    const table = document.createElement('table'); const thead = document.createElement('thead');
+    const gr = document.createElement('tr'); gr.className = 'fmrow'; gr.appendChild(document.createElement('th'));
+    fms.forEach((f, i) => {
+      if (i > 0 && f === fms[i - 1]) return;
+      let span = 1; while (i + span < fms.length && fms[i + span] === f) span++;
+      const th = document.createElement('th'); th.className = 'fm' + (starts.has(i) ? ' fmstart' : ''); th.colSpan = span; th.textContent = f; gr.appendChild(th);
+    });
+    thead.appendChild(gr);
+    const hr = document.createElement('tr');
     const c0 = document.createElement('th'); hr.appendChild(c0);
-    labels.forEach((l) => { const th = document.createElement('th'); th.textContent = SC.short(l); hr.appendChild(th); });
+    labels.forEach((l, i) => { const th = document.createElement('th'); th.textContent = SC.short(l); th.title = rng(team[i]) + ', counted in ' + fms[i]; if (starts.has(i)) th.className = 'fmstart'; hr.appendChild(th); });
     thead.appendChild(hr); table.appendChild(thead);
     const tbody = document.createElement('tbody');
     const addRow = (name, getter, isTeam) => {
@@ -920,7 +1021,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       weeks.forEach((w, i) => {
         const r = getter(w); const td = document.createElement('td');
         const v = r ? r[k] : null;
-        td.className = cls(v) + (r && !isTeam && small(r) ? ' low' : '');
+        td.className = cls(v) + (r && !isTeam && small(r) ? ' low' : '') + (starts.has(i) ? ' fmstart' : '');
         td.textContent = v == null ? '' : d3.format('.0f')(v);
         td.title = (isTeam ? 'Team' : 'Tech ' + name) + ', ' + labels[i] + ': ' + (v == null ? 'no data' : SC.pct(v)) + (r ? (k === 'ftr' ? ` on ${r.ftr_jobs} jobs` : k === 'tnps' ? ` on ${r.surveys} surveys` : ` on ${r.tcs} trouble calls`) : '');
         tr.appendChild(td);
@@ -1017,6 +1118,9 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     'Left out': 'Excluido',
     'Tech 7026 shows jobs but no tool usage, survey or FTR data, so it is not included.': 'El técnico 7026 tiene trabajos pero no datos de uso de herramienta, encuestas ni FTR, así que no se incluye.',
     'No jobs this month': 'Sin trabajos este mes',
+    'Above team avg': 'Arriba del promedio', 'Below team avg': 'Debajo del promedio', 'Worse than team': 'Peor que el equipo', 'Better than team': 'Mejor que el equipo',
+    'Lower is better': 'Más bajo es mejor', 'In line with team': 'En línea con el equipo',
+    'Lines mark where a new fiscal month starts. A week that crosses the 22nd goes with the month that has most of its days.': 'Las líneas marcan dónde empieza un nuevo mes fiscal. Una semana que cruza el día 22 va con el mes que tiene la mayoría de sus días.', 'tNPS, last 3 months': 'tNPS, últimos 3 meses',
     'Color theme': 'Tema de color', 'Language': 'Idioma', 'Scorecard pages': 'Páginas del tablero', 'no data': 'sin datos'
   };
   const date = (s) => s.replace(/\b([A-Z][a-z]{2}) (\d{1,2}), (\d{4})\b/g, (_, m, d, y) => `${d} ${mo(m)} ${y}`);
@@ -1029,7 +1133,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   };
   const RULES = [
     [/^.+$/, (m) => label(m[0])],
-    [/^([A-Z][a-z]{2}) MTD$/, (m) => `${mo(m[1])} (en curso)`],
+    [/^([A-Z][a-z]{2}) MTD$/, (m) => `${mo(m[1])}*`],
     [/^([A-Z][a-z]{2}) (\d{1,2})(\*?)$/, (m) => M[m[1]] ? `${m[2]} ${mo(m[1])}${m[3]}` : null],
     [/^([A-Z][a-z]{2})$/, (m) => M[m[1]] ? mo(m[1]) : null],
     [/^([+−±][\d.]+) pts vs (.+)$/, (m) => `${m[1]} pts vs. ${label(m[2]) || m[2]}`],
@@ -1038,6 +1142,15 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     [/^Installs ([\d.]+)%, trouble calls ([\d.]+)%, SROs ([\d.]+)%$/, (m) => `Instalaciones ${m[1]}%, llamadas de servicio ${m[2]}%, SRO ${m[3]}%`],
     [/^tNPS, last 3 months \((\d+) surveys\)$/, (m) => `tNPS, últimos 3 meses (${m[1]} encuestas)`],
     [/^(\d+) surveys$/, (m) => `${m[1]} encuestas`],
+    [/^▲ Team avg (.+)$/, (m) => `▲ Promedio del equipo ${m[1]}`],
+    [/^▲ Team installs (.+)$/, (m) => `▲ Instalaciones del equipo ${m[1]}`],
+    [/^▲ Team (.+)$/, (m) => `▲ Equipo ${m[1]}`],
+    [/^Target ([\d.]+%)$/, (m) => `Meta ${m[1]}`],
+    [/^Installs ([\d.]+%|—)$/, (m) => `Instalaciones ${m[1]}`],
+    [/^Trouble calls ([\d.]+%|—)$/, (m) => `Llamadas de servicio ${m[1]}`],
+    [/^SROs ([\d.]+%|—)$/, (m) => `SRO ${m[1]}`],
+    [/^From (.+)$/, (m) => `De ${label(m[1]) || m[1]}`],
+    [/^([A-Z][a-z]{2}) (\d{1,2}) – ([A-Z][a-z]{2}) (\d{1,2}), counted in (.+)$/, (m) => `${m[2]} ${mo(m[1])} – ${m[4]} ${mo(m[3])}, cuenta en ${label(m[5]) || m[5]}`],
     [/^Tech (\w+) has no jobs this fiscal month\. The numbers shown are from (.+)\.$/, (m) => `El técnico ${m[1]} no tiene trabajos este mes fiscal. Los números que se muestran son de ${label(m[2]) || m[2]}.`],
     [/^Last jobs in (.+); numbers shown are from then\.$/, (m) => `Últimos trabajos en ${label(m[1]) || m[1]}; los números son de ese mes.`],
     [/^Tech (\w+) is at ([\d.]+%) FTR on (\d+) jobs\. They need (\d+) first-time fixes in a row, with no repeats, to reach ([\d.]+%) this month\.$/, (m) => `El técnico ${m[1]} tiene ${m[2]} de FTR en ${m[3]} trabajos. Necesita ${m[4]} reparaciones a la primera seguidas, sin repeticiones, para llegar a ${m[5]} este mes.`],
