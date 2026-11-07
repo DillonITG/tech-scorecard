@@ -168,6 +168,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   .sc-table td.good { color: var(--color-ok); }
   .sc-table td.dim { color: var(--color-fg-muted); }
   .sc-table .tech { font-weight: 600; }
+  .sc-table tr.away td { color: var(--color-fg-muted); }
+  .sc-table tr.away td.miss { color: var(--color-fg-muted); }
   .sc-table .grp { border-left: 1px solid var(--color-border-line); }
   .sc-low { font-size: .7em; color: var(--color-fg-muted); margin-left: .25em; vertical-align: super; }
   .sc-spark { width: 96px; height: 24px; display: block; margin-left: auto; }
@@ -493,13 +495,32 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   dash.calc('tech_table', {
     inputs: ['tech_periods'],
     title: 'Techs in the latest fiscal month',
-    description: 'Each tech’s latest month with job mix, a 3-month tNPS, fixes needed to reach the FTR target and their FTR history.',
+    description: 'Each tech’s latest month with job mix, a 3-month tNPS, fixes needed to reach the FTR target and their FTR history. Techs with no jobs this month who worked in either of the two months before are kept, showing their last month.',
     fn: (tech_periods) => {
       const T = { tu: 99.5, tnps: 95, ftr: 93 };
       const ps = [...new Set(tech_periods.map((r) => r.period_start))].sort();
       const last = ps[ps.length - 1], prev = ps[ps.length - 2], last3 = ps.slice(-3);
       const find = (id, p) => tech_periods.find((x) => x.tech_id === id && x.period_start === p);
       const share = (a, b) => b > 0 ? Math.round(1000 * a / b) / 10 : 0;
+      const active = new Set(tech_periods.filter((r) => r.period_start === last).map((r) => r.tech_id));
+      const prior = ps.slice(-3, -1);
+      const awayIds = [...new Set(tech_periods.filter((r) => prior.includes(r.period_start) && !active.has(r.tech_id)).map((r) => r.tech_id))];
+      const away = awayIds.map((id) => {
+        const r = tech_periods.filter((x) => x.tech_id === id).sort((a, b) => a.period_start < b.period_start ? -1 : 1).pop();
+        const mixTotal = r.installs + r.tcs + r.sros;
+        const three = tech_periods.filter((x) => x.tech_id === id && ps.slice(-3).includes(x.period_start));
+        const s3 = three.reduce((a, x) => a + x.tnps_surveys, 0), nps3 = three.reduce((a, x) => a + x.promoters - x.detractors, 0);
+        return {
+          tech_id: id, status: 'No jobs this month', away: true, last_label: r.period_label, misses: -1, jobs: 0,
+          install_share: share(r.installs, mixTotal), tc_share: share(r.tcs, mixTotal), sro_share: share(r.sros, mixTotal),
+          mix: 'Installs ' + share(r.installs, mixTotal) + '%, trouble calls ' + share(r.tcs, mixTotal) + '%, SROs ' + share(r.sros, mixTotal) + '%',
+          tu: r.tu, tnps: r.tnps, tnps_surveys: r.tnps_surveys, low_sample: false,
+          tnps_3mo: s3 > 0 ? Math.round(1000 * nps3 / s3) / 10 : null, tnps_3mo_surveys: s3,
+          ftr: r.ftr, ftr_jobs: r.ftr_total, ftr_needed: 0, repeat: r.repeat, rework: r.rework, pht: r.pht, met: r.met,
+          tu_miss: false, tnps_miss: false, ftr_miss: false, ftr_change: null,
+          ftr_hist: ps.map((q) => { const x = find(id, q); return x ? x.ftr : ''; }).join(',')
+        };
+      });
       return tech_periods.filter((r) => r.period_start === last).map((r) => {
         const p = find(r.tech_id, prev);
         const misses = [r.tu_miss, r.tnps_miss, r.ftr_miss].filter(Boolean).length;
@@ -522,7 +543,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
           ftr_change: p ? Math.round((r.ftr - p.ftr) * 10) / 10 : null,
           ftr_hist: ps.map((q) => { const x = find(r.tech_id, q); return x ? x.ftr : ''; }).join(',')
         };
-      });
+      }).concat(away);
     }
   });
 
@@ -537,7 +558,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
         period_label: a.period_label, prev_label: b.period_label,
         tu: a.tu, tnps: a.tnps, ftr: a.ftr, repeat: a.repeat, rework: a.rework, pht: a.pht, met: a.met,
         d_tu: d('tu'), d_tnps: d('tnps'), d_ftr: d('ftr'), d_repeat: d('repeat'), d_rework: d('rework'), d_pht: d('pht'), d_met: d('met'),
-        techs: tech_table.length, techs_all_met: tech_table.filter((t) => t.misses === 0).length
+        techs: tech_table.filter((t) => !t.away).length, techs_all_met: tech_table.filter((t) => !t.away && t.misses === 0).length
       }];
     }
   });
@@ -750,7 +771,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     if (vals[li] != null) svg.append('circle').attr('cx', x(li)).attr('cy', y(vals[li])).attr('r', 2.5).attr('fill', vals[li] < SC.T.ftr ? 'var(--cds-chart-status-critical)' : dash.colors[0]);
   };
   const pickTech = (id) => { SC.picked = id; dash.draw('techrows'); dash.draw('techpick'); dash.draw('detail'); dash.draw('facts'); dash.draw('needs'); dash.draw('notes'); window.SC.notesEmpty(); };
-  const defaultPick = (rows) => rows.slice().sort((a, b) => b.misses - a.misses || a.ftr - b.ftr)[0]?.tech_id || null;
+  const defaultPick = (rows) => rows.filter((r) => !r.away).sort((a, b) => b.misses - a.misses || a.ftr - b.ftr)[0]?.tech_id || null;
 
   dash.draw('techrows', (tbody) => {
     const d = dash.data('tech_table');
@@ -765,12 +786,13 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     });
     for (const r of rows) {
       const tr = document.createElement('tr');
-      tr.className = 'click' + (r.tech_id === SC.picked ? ' is-picked' : '');
+      tr.className = 'click' + (r.tech_id === SC.picked ? ' is-picked' : '') + (r.away ? ' away' : '');
+      if (r.away) tr.title = 'Last jobs in ' + r.last_label + '; numbers shown are from then.';
       tr.dataset.key = r.tech_id; tr.tabIndex = 0;
       const td = (text, cls) => { const c = document.createElement('td'); if (cls) c.className = cls; if (text != null) c.textContent = text; tr.appendChild(c); return c; };
       td(r.tech_id, 'tech');
-      const st = td(null, 'l'); const p = document.createElement('span'); p.className = 'sc-pill ' + (r.misses === 0 ? 'ok' : r.misses === 1 ? 'warn' : 'bad'); p.textContent = r.status; st.appendChild(p);
-      td(d3.format(',')(r.jobs), 'hide-sm');
+      const st = td(null, 'l'); const p = document.createElement('span'); p.className = 'sc-pill ' + (r.away ? '' : r.misses === 0 ? 'ok' : r.misses === 1 ? 'warn' : 'bad'); p.textContent = r.status; st.appendChild(p);
+      td(r.away ? '—' : d3.format(',')(r.jobs), 'hide-sm');
       const mc = td(null, 'hide-sm'); const bar = document.createElement('div'); bar.className = 'sc-mix'; bar.title = r.mix;
       [r.install_share, r.tc_share, r.sro_share].forEach((s, i) => { const seg = document.createElement('span'); seg.style.width = s + '%'; seg.style.background = mixColors()[i]; bar.appendChild(seg); });
       mc.appendChild(bar);
@@ -827,6 +849,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   });
   dash.draw('needs', (el) => {
     const r = pickedRow(); if (!r) { el.textContent = '—'; return; }
+    if (r.away) { el.textContent = `Tech ${r.tech_id} has no jobs this fiscal month. The numbers shown are from ${r.last_label}.`; return; }
     el.textContent = r.ftr_needed > 0
       ? `Tech ${r.tech_id} is at ${SC.pct(r.ftr)} FTR on ${r.ftr_jobs} jobs. They need ${r.ftr_needed} first-time fixes in a row, with no repeats, to reach ${SC.tgt(SC.T.ftr)} this month.`
       : `Tech ${r.tech_id} is at ${SC.pct(r.ftr)} FTR on ${r.ftr_jobs} jobs, which meets the ${SC.tgt(SC.T.ftr)} target.`;
@@ -993,6 +1016,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     'A week counts as too small to judge with fewer than 10 FTR jobs, 3 surveys or 8 trouble calls.': 'Una semana es muy pequeña para evaluar con menos de 10 trabajos de FTR, 3 encuestas u 8 llamadas de servicio.',
     'Left out': 'Excluido',
     'Tech 7026 shows jobs but no tool usage, survey or FTR data, so it is not included.': 'El técnico 7026 tiene trabajos pero no datos de uso de herramienta, encuestas ni FTR, así que no se incluye.',
+    'No jobs this month': 'Sin trabajos este mes',
     'Color theme': 'Tema de color', 'Language': 'Idioma', 'Scorecard pages': 'Páginas del tablero', 'no data': 'sin datos'
   };
   const date = (s) => s.replace(/\b([A-Z][a-z]{2}) (\d{1,2}), (\d{4})\b/g, (_, m, d, y) => `${d} ${mo(m)} ${y}`);
@@ -1014,6 +1038,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     [/^Installs ([\d.]+)%, trouble calls ([\d.]+)%, SROs ([\d.]+)%$/, (m) => `Instalaciones ${m[1]}%, llamadas de servicio ${m[2]}%, SRO ${m[3]}%`],
     [/^tNPS, last 3 months \((\d+) surveys\)$/, (m) => `tNPS, últimos 3 meses (${m[1]} encuestas)`],
     [/^(\d+) surveys$/, (m) => `${m[1]} encuestas`],
+    [/^Tech (\w+) has no jobs this fiscal month\. The numbers shown are from (.+)\.$/, (m) => `El técnico ${m[1]} no tiene trabajos este mes fiscal. Los números que se muestran son de ${label(m[2]) || m[2]}.`],
+    [/^Last jobs in (.+); numbers shown are from then\.$/, (m) => `Últimos trabajos en ${label(m[1]) || m[1]}; los números son de ese mes.`],
     [/^Tech (\w+) is at ([\d.]+%) FTR on (\d+) jobs\. They need (\d+) first-time fixes in a row, with no repeats, to reach ([\d.]+%) this month\.$/, (m) => `El técnico ${m[1]} tiene ${m[2]} de FTR en ${m[3]} trabajos. Necesita ${m[4]} reparaciones a la primera seguidas, sin repeticiones, para llegar a ${m[5]} este mes.`],
     [/^Tech (\w+) is at ([\d.]+%) FTR on (\d+) jobs, which meets the ([\d.]+%) target\.$/, (m) => `El técnico ${m[1]} tiene ${m[2]} de FTR en ${m[3]} trabajos, lo que cumple la meta de ${m[4]}.`],
     [/^Snapshot of (.+) to (.+), made (.+)\. This copy does not update by itself\.$/, (m) => `Datos del ${date(m[1])} al ${date(m[2])}, generado el ${date(m[3])}. Esta copia no se actualiza sola.`],
