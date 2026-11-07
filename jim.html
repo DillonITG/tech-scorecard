@@ -323,6 +323,25 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   .sc-champ-stat .v { font-family: var(--font-anthropic-serif); font-size: calc(var(--cds-font-size-title) * .85); line-height: 1.1; font-variant-numeric: tabular-nums; }
   .sc-champ-stat .c { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
   .sc-champ-stat .c.good { color: var(--color-ok); }
+  .sc-race { border: 1px solid var(--color-border-line); border-radius: calc(var(--cds-radius) * 1.5); background: var(--color-panel); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-md); }
+  .sc-race-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; }
+  .sc-race-title { margin: 0; font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); }
+  .sc-race-eyebrow { margin: 0; font-size: var(--cds-font-size-caption); text-transform: uppercase; letter-spacing: .08em; color: var(--color-fg-muted); font-weight: 600; }
+  .sc-race-lanes { display: grid; gap: var(--cds-gap-sm); }
+  .sc-lane { display: grid; grid-template-columns: 44px minmax(150px, 230px) minmax(0, 1fr) auto; align-items: center; gap: 4px 12px; padding: 8px 10px; border-radius: var(--cds-radius); border: 1px solid var(--color-border-line); }
+  .sc-lane.first { border-color: color-mix(in srgb, #e8b931 55%, var(--color-border-line)); background: color-mix(in srgb, #e8b931 9%, var(--color-panel)); }
+  .sc-lane .medal { font-size: 28px; line-height: 1; text-align: center; }
+  .sc-lane .who { display: grid; gap: 1px; min-width: 0; }
+  .sc-lane .who b { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); }
+  .sc-lane .who span { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+  .sc-lane .track { position: relative; height: 30px; border-radius: 999px; background: repeating-linear-gradient(90deg, var(--cds-chart-grid) 0 14px, transparent 14px 22px) center / 100% 2px no-repeat, color-mix(in srgb, var(--cds-chart-grid) 55%, transparent); }
+  .sc-lane .track .flag { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-size: 16px; }
+  .sc-lane .track .car { position: absolute; top: 50%; transform: translate(-50%, -58%) scaleX(-1); font-size: 22px; line-height: 1; display: block; transition: left var(--cds-dur-slow) ease; }
+  .sc-lane .pts { font-family: var(--font-anthropic-serif); font-size: calc(var(--cds-font-size-title) * .8); line-height: 1; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+  .sc-lane .gap { grid-column: 2 / -1; margin: 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .sc-lane.first .gap { color: var(--color-ok); font-weight: 600; }
+  .sc-race-foot { margin: 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  @media (max-width: 560px) { .sc-lane { grid-template-columns: 36px minmax(0, 1fr) auto; } .sc-lane .track { grid-column: 1 / -1; grid-row: 2; } .sc-lane .gap { grid-column: 1 / -1; } .sc-lane .medal { font-size: 24px; } }
   .sc-champ-foot { margin: 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); position: relative; z-index: 1; }
   .sc-confetti { position: absolute; inset: 0 0 auto auto; width: 46%; height: 100%; pointer-events: none; opacity: .55; }
   @media (max-width: 40rem) { .sc-champ { padding-top: calc(var(--cds-pad-lg) + 28px); } .sc-confetti { height: 72px; width: 55%; opacity: .45; } .sc-champ-top { align-items: flex-start; } .sc-champ-badge { width: 52px; height: 52px; } .sc-champ-badge svg { width: 28px; height: 28px; } }
@@ -355,6 +374,14 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       </div>
       <div class="sc-champ-stats" data-draw="champstats" data-source="top_tech"></div>
       <p class="sc-champ-foot" data-draw="champfoot" data-source="top_tech">—</p>
+    </section>
+    <section class="sc-race" id="race" aria-label="Race for first place">
+      <div class="sc-race-head">
+        <h2 class="sc-race-title">🏁 Race for first place</h2>
+        <p class="sc-race-eyebrow">Last 3 fiscal months · <span data-draw="racerange" data-source="race">—</span></p>
+      </div>
+      <div class="sc-race-lanes" data-draw="racelanes" data-source="race"></div>
+      <p class="sc-race-foot">Race score: 60% FTR, 30% tNPS and 10% tool usage over the last 3 fiscal months. A tech needs at least 40 jobs and 5 surveys to race. It moves with every scorecard update.</p>
     </section>
     <div class="sc-tabs" role="tablist" aria-label="Scorecard pages">
       <button class="sc-tab" role="tab" type="button" id="tab-overview" data-page="overview" aria-selected="true">Overview</button>
@@ -1315,6 +1342,69 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       d.append(a, b, e); el.appendChild(d);
     }
   });
+  /* Race for first place: top 3 by race score over the last 3 fiscal months. */
+  dash.calc('race', {
+    inputs: ['tech_periods', 'tech_table'],
+    title: 'Race for first place',
+    description: 'Top 3 techs by race score (60% FTR, 30% tNPS, 10% tool usage) over the last 3 fiscal months, with at least 40 jobs and 5 surveys.',
+    fn: (tp, tt) => {
+      const W = { ftr: 0.6, tnps: 0.3, tu: 0.1 };
+      const ps = [...new Set(tp.map((r) => r.period_start))].sort(), win = ps.slice(-3);
+      const rows = tp.filter((r) => win.includes(r.period_start));
+      const start = win[0], end = rows.reduce((a, r) => r.period_end > a ? r.period_end : a, '');
+      const ids = new Set(tt.map((r) => r.tech_id));
+      const out = [];
+      for (const id of ids) {
+        const mine = rows.filter((r) => r.tech_id === id); const s = (k) => mine.reduce((a, r) => a + (r[k] || 0), 0);
+        const jobs = s('jobs'), surveys = s('tnps_surveys'), ft = s('ftr_total'), ff = s('ftr_fail'), tue = s('tu_e');
+        if (jobs < 40 || surveys < 5 || ft === 0 || tue === 0) continue;
+        const ftr = 100 * (ft - ff) / ft, tnps = 100 * (s('promoters') - s('detractors')) / surveys, tu = 100 * s('tu_n') / tue;
+        out.push({ tech_id: id, jobs, surveys, ftr_total: ft, ftr_fail: ff, ftr, tnps, tu, score: W.ftr * ftr + W.tnps * tnps + W.tu * tu });
+      }
+      out.sort((a, b) => b.score - a.score || b.ftr - a.ftr || b.jobs - a.jobs);
+      const top = out.slice(0, 3);
+      top.forEach((r, i) => {
+        r.rank = i + 1; r.start = start; r.end = end; r.racers = out.length;
+        if (i === 0) { r.gap = 0; r.fixes = null; return; }
+        const ahead = top[i - 1]; r.gap = ahead.score - r.score;
+        /* How many fewer FTR fails over the window would have put this tech's score past the one ahead. */
+        const need = (ahead.score + 0.001 - W.tnps * r.tnps - W.tu * r.tu) / (W.ftr * 100);
+        const fewer = Math.max(1, Math.ceil(need * r.ftr_total - (r.ftr_total - r.ftr_fail)));
+        r.fixes = fewer <= r.ftr_fail ? fewer : null;
+      });
+      return top;
+    }
+  });
+  dash.draw('racerange', (el) => { const d = dash.data('race'); const r = d.status === 'ok' ? d.data[0] : null; el.textContent = r ? md(r.start) + ' – ' + md(r.end) : '—'; });
+  dash.draw('racelanes', (el) => {
+    el.replaceChildren();
+    const d = dash.data('race'); if (d.status !== 'ok') return;
+    const top = d.data;
+    if (!top.length) { const p = document.createElement('p'); p.className = 'sc-race-foot'; p.textContent = 'Not enough techs qualify yet.'; el.appendChild(p); return; }
+    const mk = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+    const hi = top[0].score, lo = Math.min(...top.map((r) => r.score)) - 3;
+    const pos = (v) => 6 + 82 * (hi === lo ? 1 : (v - lo) / (hi - lo));
+    const medals = ['🥇', '🥈', '🥉'];
+    top.forEach((r, i) => {
+      const lane = mk('div', 'sc-lane' + (i === 0 ? ' first' : ''));
+      lane.appendChild(mk('span', 'medal', medals[i]));
+      const who = mk('div', 'who'); who.append(mk('b', null, 'Tech ' + r.tech_id), mk('span', null, 'FTR ' + SC.pct(r.ftr) + ' · tNPS ' + SC.pct(r.tnps) + ' · ' + d3.format(',')(r.jobs) + ' jobs'));
+      lane.appendChild(who);
+      const track = mk('div', 'track'); track.setAttribute('aria-hidden', 'true');
+      track.appendChild(mk('span', 'flag', '🏁'));
+      const car = mk('span', 'car', '🏎️'); car.style.left = pos(r.score) + '%'; track.appendChild(car);
+      lane.appendChild(track);
+      lane.appendChild(mk('span', 'pts', d3.format('.1f')(r.score) + ' pts'));
+      let gap;
+      if (i === 0) { const lead = top[1] ? r.score - top[1].score : null; gap = '👑 In the lead' + (lead != null ? ' by ' + d3.format(lead < 0.1 ? '.2f' : '.1f')(lead) + ' pts' : ''); }
+      else {
+        gap = '🔥 ' + d3.format(r.gap < 0.1 ? '.2f' : '.1f')(r.gap) + ' pts behind ' + (i === 1 ? '🥇' : '🥈');
+        gap += r.fixes != null ? ' · ' + r.fixes + ' fewer FTR ' + (r.fixes === 1 ? 'fail' : 'fails') + (i === 1 ? ' would take the lead' : ' would move into 2nd') : ' · needs a tNPS or tool usage boost to pass';
+      }
+      lane.appendChild(mk('p', 'gap', gap));
+      el.appendChild(lane);
+    });
+  });
   dash.draw('champfoot', (el) => {
     const c = champ(); if (!c) { el.textContent = '—'; return; }
     el.textContent = (c.also ? 'Also met every target: ' + c.also + '. ' : '') + 'To qualify, a tech needs at least 40 jobs and has to meet all three targets over the 30 days.';
@@ -1652,7 +1742,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     'Job': 'Trabajo', 'Observer': 'Observador', 'Open QC': 'Abrir QC', 'No QCs by other observers in the last 30 days.': 'No hay QC de otros observadores en los últimos 30 días.',
     'No tech met all three targets with at least 40 jobs over the last 30 days.': 'Ningún técnico cumplió las tres metas con al menos 40 trabajos en los últimos 30 días.',
     'Lines mark where a new fiscal month starts. A week that crosses the 22nd goes with the month that has most of its days.': 'Las líneas marcan dónde empieza un nuevo mes fiscal. Una semana que cruza el día 22 va con el mes que tiene la mayoría de sus días.', 'tNPS, last 3 months': 'tNPS, últimos 3 meses', 'Timeframe': 'Período', 'Weeks are grouped under their fiscal month. A week that crosses the 22nd goes with the month that has most of its days.': 'Las semanas se agrupan bajo su mes fiscal. Una semana que cruza el día 22 va con el mes que tiene la mayoría de sus días.', 'Feedback': 'Comentarios', 'Surveys by tech': 'Encuestas por técnico', 'Number of surveys and tNPS for each tech. Select a tech to see only theirs.': 'Número de encuestas y tNPS de cada técnico. Selecciona un técnico para ver solo las suyas.', 'Newest first, as customers wrote them. Passives and detractors always show, with or without a comment.': 'Las más recientes primero, tal como las escribieron los clientes. Los pasivos y detractores siempre aparecen, con o sin comentario.', 'Surveys': 'Encuestas', 'Passives (7–8)': 'Pasivos (7–8)', 'Detractors (0–6)': 'Detractores (0–6)', 'No comment left': 'Sin comentario', 'Hide promoter surveys with no comment': 'Ocultar encuestas de promotores sin comentario', 'All surveys': 'Todas las encuestas', 'No surveys yet.': 'Aún no hay encuestas.', 'Customer feedback': 'Comentarios de clientes', 'Comments by tech': 'Comentarios por técnico', 'Select a tech to see only their comments.': 'Selecciona un técnico para ver solo sus comentarios.', 'What customers mention': 'Lo que mencionan los clientes', 'How many comments bring up each theme. Select one to filter; matching words are highlighted.': 'Cuántos comentarios mencionan cada tema. Selecciona uno para filtrar; las palabras que coinciden se resaltan.', 'All comments': 'Todos los comentarios', 'Newest first, as customers wrote them.': 'Los más recientes primero, tal como los escribieron los clientes.', 'Comments': 'Comentarios', 'Average score': 'Puntuación promedio', 'Out of 10': 'De 10', 'Promoters (9–10)': 'Promotores (9–10)', 'Passives and detractors (0–8)': 'Pasivos y detractores (0–8)', 'All': 'Todos', 'Promoters': 'Promotores', 'Passives': 'Pasivos', 'Detractors': 'Detractores', 'No comments match.': 'Ningún comentario coincide.', 'No survey comments yet.': 'Aún no hay comentarios de encuestas.', 'Knowledgeable': 'Conocedor', 'Professional': 'Profesional', 'Friendly and pleasant': 'Amable y agradable', 'Helpful': 'Servicial', 'Quick and on time': 'Rápido y puntual', 'Explained things': 'Explicó todo', 'Fixed the problem': 'Resolvió el problema', 'Score': 'Puntuación', 'Slide left to look further back.': 'Desliza a la izquierda para ver más atrás.', '1 month': '1 mes',
-    'Color theme': 'Tema de color', 'BP-Ontrac Team Metrics for Jim’s team, pulled one fiscal month at a time and one week at a time.': 'Métricas de equipo de BP-Ontrac para el equipo de Jim, descargadas por mes fiscal y por semana.', 'Language': 'Idioma', 'Scorecard pages': 'Páginas del tablero', 'no data': 'sin datos'
+    'Color theme': 'Tema de color', '🏁 Race for first place': '🏁 Carrera por el primer lugar', 'Last 3 fiscal months ·': 'Últimos 3 meses fiscales ·', 'Not enough techs qualify yet.': 'Todavía no hay suficientes técnicos que califiquen.', 'Race score: 60% FTR, 30% tNPS and 10% tool usage over the last 3 fiscal months. A tech needs at least 40 jobs and 5 surveys to race. It moves with every scorecard update.': 'Puntaje de la carrera: 60% FTR, 30% tNPS y 10% uso de herramienta en los últimos 3 meses fiscales. Un técnico necesita al menos 40 trabajos y 5 encuestas para competir. Se mueve con cada actualización del tablero.', 'BP-Ontrac Team Metrics for Jim’s team, pulled one fiscal month at a time and one week at a time.': 'Métricas de equipo de BP-Ontrac para el equipo de Jim, descargadas por mes fiscal y por semana.', 'Language': 'Idioma', 'Scorecard pages': 'Páginas del tablero', 'no data': 'sin datos'
   };
   const MH = { Jan: 'jan', Feb: 'fev', Mar: 'mas', Apr: 'avr', May: 'me', Jun: 'jen', Jul: 'jiy', Aug: 'out', Sep: 'sep', Oct: 'okt', Nov: 'nov', Dec: 'des' };
   const moh = (m) => MH[m] || m;
@@ -1747,7 +1837,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     'Newest first. Select Photos to see the pictures from each QC. Photos that show a house number or other customer details are left out.': 'Sa ki pi resan yo an premye. Chwazi Foto pou wè foto chak QC. Foto ki montre nimewo kay la oswa lòt enfòmasyon kliyan an pa ladan yo.', 'Photos': 'Foto', 'Close': 'Fèmen', 'Previous photo': 'Foto anvan', 'Next photo': 'Pwochen foto',
     'QCs': 'QC', 'Techs with a QC': 'Teknisyen ki gen QC', 'Out of 100': 'Sou 100', 'TQI alerts': 'Alèt TQI', 'Completed': 'Fini',
     'Job': 'Travay', 'Observer': 'Obsèvatè', 'Open QC': 'Louvri QC', 'No QCs by other observers in the last 30 days.': 'Pa gen QC lòt obsèvatè nan 30 dènye jou yo.',
-    'Color theme': 'Koulè', 'BP-Ontrac Team Metrics for Jim’s team, pulled one fiscal month at a time and one week at a time.': 'Mezi ekip BP-Ontrac pou ekip Jim, rale youn mwa fiskal alafwa ak youn semèn alafwa.', 'Language': 'Lang', 'Scorecard pages': 'Paj tablo a', 'no data': 'pa gen done'
+    'Color theme': 'Koulè', '🏁 Race for first place': '🏁 Kous pou premye plas', 'Last 3 fiscal months ·': '3 dènye mwa fiskal ·', 'Not enough techs qualify yet.': 'Poko gen ase teknisyen ki kalifye.', 'Race score: 60% FTR, 30% tNPS and 10% tool usage over the last 3 fiscal months. A tech needs at least 40 jobs and 5 surveys to race. It moves with every scorecard update.': 'Pwen kous la: 60% FTR, 30% tNPS ak 10% itilizasyon zouti sou 3 dènye mwa fiskal yo. Yon teknisyen bezwen omwen 40 travay ak 5 sondaj pou l patisipe. Li chanje chak fwa tablo a mete ajou.', 'BP-Ontrac Team Metrics for Jim’s team, pulled one fiscal month at a time and one week at a time.': 'Mezi ekip BP-Ontrac pou ekip Jim, rale youn mwa fiskal alafwa ak youn semèn alafwa.', 'Language': 'Lang', 'Scorecard pages': 'Paj tablo a', 'no data': 'pa gen done'
   };
   const labelHT = (s) => {
     let m;
@@ -1758,6 +1848,10 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   };
   const dateHT = (s) => s.replace(/\b([A-Z][a-z]{2}) (\d{1,2}), (\d{4})\b/g, (_, m, d, y) => `${d} ${moh(m)} ${y}`);
   const RULES_HT = [
+    [/^FTR (.+) · tNPS (.+) · ([\d,]+) jobs$/, (m) => `FTR ${m[1]} · tNPS ${m[2]} · ${m[3]} travay`],
+    [/^([\d.]+) pts$/, (m) => `${m[1]} pwen`],
+    [/^👑 In the lead(?: by ([\d.]+) pts)?$/, (m) => '👑 An tèt' + (m[1] ? ` ak ${m[1]} pwen davans` : '')],
+    [/^🔥 ([\d.]+) pts behind (🥇|🥈)(?: · (\d+) fewer FTR fails? would (take the lead|move into 2nd)|( · needs a tNPS or tool usage boost to pass))$/, (m) => `🔥 ${m[1]} pwen dèyè ${m[2]}` + (m[5] ? ' · bezwen ogmante tNPS oswa itilizasyon zouti pou pase' : ` · ${m[3]} echèk FTR mwens ${m[4] === 'take the lead' ? 'ta mete l an tèt' : 'ta monte l nan 2yèm plas'}`)],
     [/^(\d+) FTR fails? of (\d+) jobs$/, (m) => `${m[1]} echèk FTR sou ${m[2]} travay`],
     [/^(\d+) detractors?$/, (m) => `${m[1]} detraktè`],
     [/^.+$/, (m) => labelHT(m[0])],
@@ -1827,6 +1921,10 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     return null;
   };
   const RULES = [
+    [/^FTR (.+) · tNPS (.+) · ([\d,]+) jobs$/, (m) => `FTR ${m[1]} · tNPS ${m[2]} · ${m[3]} trabajos`],
+    [/^([\d.]+) pts$/, (m) => `${m[1]} pts`],
+    [/^👑 In the lead(?: by ([\d.]+) pts)?$/, (m) => '👑 Va a la cabeza' + (m[1] ? ` por ${m[1]} pts` : '')],
+    [/^🔥 ([\d.]+) pts behind (🥇|🥈)(?: · (\d+) fewer FTR fails? would (take the lead|move into 2nd)|( · needs a tNPS or tool usage boost to pass))$/, (m) => `🔥 ${m[1]} pts detrás de ${m[2]}` + (m[5] ? ' · necesita subir el tNPS o el uso de herramienta para pasar' : ` · ${m[3]} ${m[3] === '1' ? 'falla' : 'fallas'} FTR menos ${m[4] === 'take the lead' ? 'le darían la delantera' : 'lo pasarían al 2.º lugar'}`)],
     [/^(\d+) FTR fails? of (\d+) jobs$/, (m) => `${m[1]} ${m[1] === '1' ? 'falla' : 'fallas'} FTR de ${m[2]} trabajos`],
     [/^(\d+) detractors?$/, (m) => `${m[1]} ${m[1] === '1' ? 'detractor' : 'detractores'}`],
     [/^.+$/, (m) => label(m[0])],
