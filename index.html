@@ -399,11 +399,12 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     <div class="sc-card">
       <div class="sc-sec-head">
         <div>
-          <h2>Techs this fiscal month</h2>
+          <h2 data-draw="tabletitle" data-source="tech_periods">Techs this fiscal month</h2>
           <p class="sc-note">Red values are below target. A small “low” mark means too few surveys to judge. Select a tech to see their detail below.</p>
         </div>
         <input class="sc-search" id="sc-search" type="search" placeholder="Find a tech" aria-label="Find a tech">
       </div>
+      <div class="sc-span" data-draw="span" data-span="tspan" data-source="tech_periods"></div>
       <div class="sc-legend"><span>Job mix:</span><span><i class="box" data-draw="mixkey" data-which="0"></i>Installs</span><span><i class="box" data-draw="mixkey" data-which="1"></i>Trouble calls</span><span><i class="box" data-draw="mixkey" data-which="2"></i>SROs</span></div>
       <div class="sc-tablebox">
         <table class="sc-table" id="sc-techtable" data-source="tech_table" data-row-key="tech_id">
@@ -438,7 +439,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
         </div>
         <select class="dash-select" id="sc-techpick" data-draw="techpick" data-source="tech_table" aria-label="Tech"></select>
       </div>
-      <div class="sc-span" data-draw="span" data-source="tech_periods"></div>
+      <div class="sc-span" data-draw="span" data-span="span" data-source="tech_periods"></div>
       <div class="sc-facts" data-draw="facts" data-source="tech_table team_now tech_periods"></div>
       <p class="sc-needs" data-draw="needs" data-source="tech_table">—</p>
       <div class="sc-legend"><span><i data-draw="swatch" data-which="tech"></i>Selected tech</span><span><i data-draw="swatch" data-which="team"></i>Team</span><span><i class="dash"></i>Target</span><span><i class="mark"></i>Coaching note</span></div>
@@ -515,6 +516,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     query: '',
     heat: 'ftr',
     span: 1,
+    tspan: 1,
     page: 'overview'
   };
 
@@ -534,6 +536,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
           promoters: n(r.promoters), detractors: n(r.detractors), tnps_surveys: s,
           ftr_total: n(r.ftr_total_jobs), ftr_fail: n(r.ftr_fail_jobs),
           repeat_n: n(r.repeat_count), met_n: n(r.met_appts), appts: n(r.total_appts),
+          tu_n: n(r.tu_result), tu_e: n(r.tu_eligible), rework_n: n(r.rework_count), pht_jobs: n(r.pht_jobs), pht_fails: n(r.pht_fails),
           tu, tnps, ftr,
           repeat: rate(n(r.repeat_count), n(r.tcs)), rework: rate(n(r.rework_count), n(r.installs) + n(r.tcs)),
           pht: rate(n(r.pht_jobs) - n(r.pht_fails), n(r.pht_jobs)), met: rate(n(r.met_appts), n(r.total_appts)),
@@ -907,11 +910,27 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   const pickTech = (id) => { SC.picked = id; dash.draw('techrows'); dash.draw('techpick'); dash.draw('detail'); dash.draw('facts'); dash.draw('needs'); dash.draw('notes'); window.SC.notesEmpty(); };
   const defaultPick = (rows) => rows.filter((r) => !r.away).sort((a, b) => b.misses - a.misses || a.ftr - b.ftr)[0]?.tech_id || null;
 
+  /* The tech table over the last K fiscal months: each tech's counts added up, rates and target misses worked out from the totals. */
+  const tableRows = (base, K) => {
+    const tp = dash.data('tech_periods'); if (K <= 1 || tp.status !== 'ok') return base;
+    const ps = [...new Set(tp.data.map((r) => r.period_start))].sort(), win = ps.slice(-K);
+    return base.map((row) => {
+      const c = compile(tp.data.filter((r) => r.tech_id === row.tech_id && win.includes(r.period_start)));
+      if (!c.jobs) return row;
+      const tu_miss = c.tu != null && c.tu < SC.T.tu, tnps_miss = c.tnps_surveys >= 5 && c.tnps != null && c.tnps < SC.T.tnps, ftr_miss = c.ftr != null && c.ftr < SC.T.ftr;
+      const misses = [tu_miss, tnps_miss, ftr_miss].filter(Boolean).length;
+      return Object.assign({}, row, c, { away: false, misses, status: misses === 0 ? 'On target' : misses + ' below target', tu_miss, tnps_miss, ftr_miss,
+        low_sample: c.tnps_surveys < 5, ftr_needed: null,
+        mix: 'Installs ' + c.install_share + '%, trouble calls ' + c.tc_share + '%, SROs ' + c.sro_share + '%' });
+    });
+  };
+  dash.draw('tabletitle', (el) => { const K = SC.tspan || 1; el.textContent = K > 1 ? 'Techs, last ' + K + ' months' : 'Techs this fiscal month'; });
   dash.draw('techrows', (tbody) => {
-    const d = dash.data('tech_table');
+    const d0 = dash.data('tech_table');
     tbody.replaceChildren();
-    if (d.status !== 'ok') return;
-    if (!SC.picked || !d.data.some((r) => r.tech_id === SC.picked)) SC.picked = defaultPick(d.data);
+    if (d0.status !== 'ok') return;
+    if (!SC.picked || !d0.data.some((r) => r.tech_id === SC.picked)) SC.picked = defaultPick(d0.data);
+    const d = { data: tableRows(d0.data, SC.tspan || 1) };
     const q = SC.query.trim().toLowerCase(), { col, dir } = SC.sort;
     const rows = d.data.filter((r) => !q || String(r.tech_id).toLowerCase().includes(q)).slice().sort((a, b) => {
       const av = a[col], bv = b[col];
@@ -935,7 +954,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       if (r.low_sample) { const s = document.createElement('span'); s.className = 'sc-low'; s.textContent = 'low'; s.title = r.tnps_surveys + ' surveys'; tn.appendChild(s); }
       td(SC.pct(r.tnps_3mo), 'hide-sm' + (r.tnps_3mo != null && r.tnps_3mo < SC.T.tnps ? ' miss' : ''));
       td(SC.pct(r.ftr), r.ftr_miss ? 'miss' : '');
-      td(r.ftr_needed > 0 ? String(r.ftr_needed) : '—', 'hide-sm' + (r.ftr_needed > 0 ? ' miss' : ''));
+      { const c = td(r.ftr_needed > 0 ? String(r.ftr_needed) : '—', 'hide-sm' + (r.ftr_needed > 0 ? ' miss' : '')); if (r.ftr_needed == null) c.title = 'Shown for the current month only'; }
       td(SC.pct(r.repeat), 'grp hide-sm');
       td(SC.pct(r.rework), 'hide-sm');
       td(SC.pct(r.pht), 'hide-sm');
@@ -974,7 +993,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   dash.draw('span', (el) => {
     el.replaceChildren(); el.style.setProperty('--sc-accent', dash.colors[0]);
     const ms = spanMonths(); if (!ms.length) return;
-    const N = ms.length; SC.span = Math.min(Math.max(1, SC.span || 1), N);
+    const key = el.dataset.span || 'span', N = ms.length; SC[key] = Math.min(Math.max(1, SC[key] || 1), N);
+    const redraw = key === 'tspan' ? () => { dash.draw('techrows'); dash.draw('tabletitle'); } : () => dash.draw('facts');
     const mk = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
     const top = mk('div', 'top'); const lab = mk('span', 'k', 'Timeframe'); const read = mk('span', 'read');
     const rTxt = mk('span'), rN = mk('span', 'n'); read.append(rTxt, rN); top.append(lab, read);
@@ -986,14 +1006,14 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     el.append(top, track, ticks, hint);
     const place = () => {
       const w = inp.getBoundingClientRect().width || 1, th = 20, pct = (i) => ((th / 2) + (N === 1 ? 0 : i / (N - 1)) * (w - th)) / w * 100;
-      const start = N - SC.span; inp.value = start;
+      const start = N - SC[key]; inp.value = start;
       fill.style.left = pct(start) + '%'; fill.style.right = (100 - pct(N - 1)) + '%';
       tk.forEach((t, i) => { t.style.left = pct(i) + '%'; t.classList.toggle('on', i >= start); });
-      rTxt.textContent = SC.span === 1 ? ms[N - 1][1] : ms[start][1] + ' – ' + ms[N - 1][1];
-      rN.textContent = SC.span === 1 ? '1 month' : SC.span + ' months';
+      rTxt.textContent = SC[key] === 1 ? ms[N - 1][1] : ms[start][1] + ' – ' + ms[N - 1][1];
+      rN.textContent = SC[key] === 1 ? '1 month' : SC[key] + ' months';
       inp.setAttribute('aria-valuetext', rTxt.textContent);
     };
-    inp.oninput = () => { SC.span = N - +inp.value; place(); dash.draw('facts'); };
+    inp.oninput = () => { SC[key] = N - +inp.value; place(); redraw(); };
     requestAnimationFrame(place); place();
   });
   /* Add a tech's months together and work out the rates from the totals. */
@@ -1004,7 +1024,9 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     return { jobs: sum('jobs'), install_share: rate(sum('installs'), mix) ?? 0, tc_share: rate(sum('tcs'), mix) ?? 0, sro_share: rate(sum('sros'), mix) ?? 0,
       ftr: rate(sum('ftr_total') - sum('ftr_fail'), sum('ftr_total')), ftr_total: sum('ftr_total'), ftr_fail: sum('ftr_fail'), installs: sum('installs'), tcs: sum('tcs'), sros: sum('sros'),
       promoters: sum('promoters'), detractors: sum('detractors'), surveys: sum('tnps_surveys'),
-      repeat: rate(sum('repeat_n'), sum('tcs')), met: rate(sum('met_n'), sum('appts')), months: new Set(rows.map((r) => r.period_start)).size };
+      repeat: rate(sum('repeat_n'), sum('tcs')), met: rate(sum('met_n'), sum('appts')),
+      tu: rate(sum('tu_n'), sum('tu_e')), tnps: rate(sum('promoters') - sum('detractors'), sum('tnps_surveys')), tnps_surveys: sum('tnps_surveys'),
+      rework: rate(sum('rework_n'), sum('installs') + sum('tcs')), pht: rate(sum('pht_jobs') - sum('pht_fails'), sum('pht_jobs')), months: new Set(rows.map((r) => r.period_start)).size };
   };
   const spanView = (row, k) => {
     const tp = dash.data('tech_periods'), tt = dash.data('tech_table'); if (tp.status !== 'ok' || tt.status !== 'ok') return null;
@@ -1325,6 +1347,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     [/^Tech (\w+)$/, (m) => `Técnico ${m[1]}`],
     [/^Installs ([\d.]+)%, trouble calls ([\d.]+)%, SROs ([\d.]+)%$/, (m) => `Instalaciones ${m[1]}%, llamadas de servicio ${m[2]}%, SRO ${m[3]}%`],
     [/^tNPS, last 3 months \((\d+) surveys\)$/, (m) => `tNPS, últimos 3 meses (${m[1]} encuestas)`],
+    [/^Techs, last (\d+) months$/, (m) => `Técnicos, últimos ${m[1]} meses`],
     [/^Jobs, last (\d+) months$/, (m) => `Trabajos, últimos ${m[1]} meses`],
     [/^tNPS, last (\d+) months$/, (m) => `tNPS, últimos ${m[1]} meses`],
     [/^(\d+) months$/, (m) => `${m[1]} meses`],
