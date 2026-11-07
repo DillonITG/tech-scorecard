@@ -48,6 +48,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
 .theme-toggle button[aria-pressed="true"] { background: var(--color-fg); color: var(--color-bg); }
 .theme-toggle button:focus-visible { outline: 2px solid var(--cds-chart-axis); outline-offset: 2px; }
 .theme-toggle svg { width: 13px; height: 13px; }
+.toggles { display: flex; gap: 8px; flex-wrap: wrap; }
 .dash-select { font: inherit; font-size: 13px; padding: 5px 9px; border: 1px solid var(--color-border-line); border-radius: 8px; background-color: var(--color-bg); color: var(--color-fg); max-width: 100%; }
 .dash-skeleton { min-height: 1em; }
 [hidden] { display: none !important; }
@@ -98,9 +99,15 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
 <div id="dash-root">
 <div class="snap-bar">
 <p class="snap-stamp">Snapshot of May 22, 2026 to Nov 4, 2026, made Nov 6, 2026. This copy does not update by itself.</p>
+<div class="toggles">
+<div class="theme-toggle lang-toggle" role="group" aria-label="Language / Idioma">
+<button type="button" data-lang-choice="en" aria-pressed="true">English</button>
+<button type="button" data-lang-choice="es" aria-pressed="false">Español</button>
+</div>
 <div class="theme-toggle" role="group" aria-label="Color theme">
 <button type="button" data-theme-choice="light" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Light</button>
 <button type="button" data-theme-choice="dark" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>Dark</button>
+</div>
 </div>
 </div>
 
@@ -919,6 +926,167 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   mq.addEventListener('change', sync);
   sync();
 })();
+</script>
+<script>
+(function () {
+  const M = { Jan: 'ene', Feb: 'feb', Mar: 'mar', Apr: 'abr', May: 'may', Jun: 'jun', Jul: 'jul', Aug: 'ago', Sep: 'sep', Oct: 'oct', Nov: 'nov', Dec: 'dic' };
+  const mo = (m) => M[m] || m;
+  const ES = {
+    'Broward & Dade tech scorecard': 'Tablero de técnicos Broward y Dade',
+    'of': 'de',
+    'techs are meeting all three targets in': 'técnicos cumplen las tres metas en',
+    '. FTR is where the team most often falls short. Fiscal months run from the 22nd to the 21st, and the latest one is still in progress.': '. El FTR es donde el equipo más se queda corto. Los meses fiscales van del 22 al 21, y el más reciente sigue en curso.',
+    'Overview': 'Resumen', 'Techs': 'Técnicos', 'Weekly': 'Semanal',
+    'Light': 'Claro', 'Dark': 'Oscuro',
+    'Tool usage': 'Uso de herramienta',
+    'Share of eligible jobs where the tech ran the tool.': 'Porcentaje de trabajos elegibles en los que el técnico usó la herramienta.',
+    'tNPS': 'tNPS',
+    'Promoters minus detractors, as a share of all surveys.': 'Promotores menos detractores, como porcentaje de todas las encuestas.',
+    'FTR': 'FTR',
+    'Share of jobs fixed the first time, with no repeat visit.': 'Porcentaje de trabajos resueltos a la primera, sin visita repetida.',
+    'Target': 'Meta', 'On target': 'En meta', 'Below target': 'Debajo de la meta',
+    'What drives FTR and the customer experience': 'Lo que impulsa el FTR y la experiencia del cliente',
+    'No company target is set for these, so the trend is what matters. Lower is better for repeats and rework.': 'La empresa no fija metas para estos, así que lo importante es la tendencia. Para repeticiones y retrabajo, más bajo es mejor.',
+    'Repeat rate': 'Tasa de repetición',
+    'Trouble calls with a repeat visit for the same issue.': 'Llamadas de servicio con visita repetida por el mismo problema.',
+    'Rework rate': 'Tasa de retrabajo',
+    'Installs and trouble calls that needed rework.': 'Instalaciones y llamadas de servicio que necesitaron retrabajo.',
+    'PHT pass rate': 'Tasa de aprobación PHT',
+    'Premise health tests that passed.': 'Pruebas de salud del domicilio (PHT) aprobadas.',
+    'Appointments met': 'Citas cumplidas',
+    'Appointments where the tech arrived in the window.': 'Citas en las que el técnico llegó dentro del horario.',
+    'Watch list': 'Lista de seguimiento',
+    'Techs below target on the same metric in each of the last two fiscal months.': 'Técnicos debajo de la meta en la misma métrica en cada uno de los dos últimos meses fiscales.',
+    'No tech has missed the same target two months running.': 'Ningún técnico ha fallado la misma meta dos meses seguidos.',
+    'Tech': 'Técnico', 'Metric': 'Métrica', 'Last month': 'Mes pasado', 'This month': 'Este mes',
+    'Techs this fiscal month': 'Técnicos este mes fiscal',
+    'Red values are below target. A small “low” mark means too few surveys to judge. Select a tech to see their detail below.': 'Los valores en rojo están debajo de la meta. La marca “pocas” significa que hay muy pocas encuestas para evaluar. Seleccione un técnico para ver su detalle abajo.',
+    'Find a tech': 'Buscar técnico',
+    'Job mix:': 'Tipos de trabajo:', 'Installs': 'Instalaciones', 'Trouble calls': 'Llamadas de servicio', 'SROs': 'SRO',
+    'Status': 'Estado', 'Jobs': 'Trabajos', 'Job mix': 'Tipos de trabajo', 'tNPS 3 mo': 'tNPS 3 meses',
+    'Fixes to target': 'Para llegar a la meta', 'Repeat': 'Repetición', 'Rework': 'Retrabajo', 'PHT pass': 'PHT aprobado',
+    'Appts met': 'Citas cumplidas', 'FTR, 6 months': 'FTR, 6 meses', 'low': 'pocas',
+    'Tech detail': 'Detalle del técnico',
+    'Monthly rates for the selected tech against the team, with the target as a dashed line.': 'Tasas mensuales del técnico seleccionado frente al equipo, con la meta como línea punteada.',
+    'Jobs this month': 'Trabajos este mes', 'Installs / trouble calls': 'Instalaciones / llamadas de servicio',
+    'Selected tech': 'Técnico seleccionado', 'Team': 'Equipo', 'Coaching note': 'Nota de coaching', 'Coaching notes': 'Notas de coaching',
+    'No coaching notes for this tech yet. Ask Claude to log one, for example: “Log a coaching note for 7189: reviewed drop bonding on 11/6.”': 'Todavía no hay notas de coaching para este técnico.',
+    'Week by week': 'Semana por semana',
+    'Monday-to-Sunday weeks, so a slide shows up before the fiscal month closes. The last week is partial.': 'Semanas de lunes a domingo, para ver una baja antes de que cierre el mes fiscal. La última semana es parcial.',
+    'Team FTR by week': 'FTR del equipo por semana', 'Team tNPS by week': 'tNPS del equipo por semana', 'Team repeat rate by week': 'Tasa de repetición del equipo por semana',
+    'Each tech by week': 'Cada técnico por semana',
+    'Green meets target, amber is close, red is below. Faded cells had too few jobs or surveys to judge.': 'Verde cumple la meta, ámbar está cerca, rojo está debajo. Las celdas tenues tuvieron muy pocos trabajos o encuestas para evaluar.',
+    'How these numbers are worked out': 'Cómo se calculan estos números',
+    'Source': 'Fuente',
+    'BP-Ontrac Team Metrics for the Broward and Dade team, pulled one fiscal month at a time and one week at a time.': 'Métricas de equipo de BP-Ontrac para el equipo Broward y Dade, descargadas por mes fiscal y por semana.',
+    'Fiscal month': 'Mes fiscal',
+    'The 22nd of one month to the 21st of the next, named for the month it ends in. The latest month runs to the most recent day BP-Ontrac allows.': 'Del 22 de un mes al 21 del siguiente, con el nombre del mes en que termina. El mes más reciente llega hasta el último día que permite BP-Ontrac.',
+    'Team totals': 'Totales del equipo',
+    'Counts are added across techs before the rate is worked out, so busier techs carry more weight.': 'Los conteos de todos los técnicos se suman antes de calcular la tasa, así que los técnicos con más trabajos pesan más.',
+    'Targets': 'Metas', ', tNPS': ', tNPS', ', FTR': ', FTR',
+    'Promoters minus detractors over all surveys in the last three fiscal months, which steadies small monthly samples. A tech’s monthly tNPS counts as a miss only with at least 5 surveys that month.': 'Promotores menos detractores sobre todas las encuestas de los últimos tres meses fiscales, lo que estabiliza muestras mensuales pequeñas. El tNPS mensual de un técnico cuenta como falla solo con al menos 5 encuestas ese mes.',
+    'How many first-time fixes in a row the tech needs, with no repeats, to bring this month’s FTR up to target.': 'Cuántas reparaciones a la primera seguidas, sin repeticiones, necesita el técnico para subir su FTR de este mes a la meta.',
+    'Repeat visits as a share of trouble calls.': 'Visitas repetidas como porcentaje de las llamadas de servicio.',
+    'Rework as a share of installs and trouble calls.': 'Retrabajo como porcentaje de instalaciones y llamadas de servicio.',
+    'Premise health tests without a failure, as a share of all tests.': 'Pruebas de salud del domicilio sin falla, como porcentaje de todas las pruebas.',
+    'Weekly view': 'Vista semanal',
+    'A week counts as too small to judge with fewer than 10 FTR jobs, 3 surveys or 8 trouble calls.': 'Una semana es muy pequeña para evaluar con menos de 10 trabajos de FTR, 3 encuestas u 8 llamadas de servicio.',
+    'Left out': 'Excluido',
+    'Tech 7026 shows jobs but no tool usage, survey or FTR data, so it is not included.': 'El técnico 7026 tiene trabajos pero no datos de uso de herramienta, encuestas ni FTR, así que no se incluye.',
+    'Color theme': 'Tema de color', 'Language': 'Idioma', 'Scorecard pages': 'Páginas del tablero', 'no data': 'sin datos'
+  };
+  const date = (s) => s.replace(/\b([A-Z][a-z]{2}) (\d{1,2}), (\d{4})\b/g, (_, m, d, y) => `${d} ${mo(m)} ${y}`);
+  const label = (s) => {
+    let m;
+    if ((m = s.match(/^([A-Z][a-z]{2}) FM \(to date\)$/))) return `MF ${mo(m[1])} (en curso)`;
+    if ((m = s.match(/^([A-Z][a-z]{2}) FM$/))) return `MF ${mo(m[1])}`;
+    if ((m = s.match(/^Wk ([A-Z][a-z]{2}) (\d{1,2})( \(partial\))?$/))) return `Sem. ${m[2]} ${mo(m[1])}${m[3] ? ' (parcial)' : ''}`;
+    return null;
+  };
+  const RULES = [
+    [/^.+$/, (m) => label(m[0])],
+    [/^([A-Z][a-z]{2}) MTD$/, (m) => `${mo(m[1])} (en curso)`],
+    [/^([A-Z][a-z]{2}) (\d{1,2})(\*?)$/, (m) => M[m[1]] ? `${m[2]} ${mo(m[1])}${m[3]}` : null],
+    [/^([A-Z][a-z]{2})$/, (m) => M[m[1]] ? mo(m[1]) : null],
+    [/^([+−±][\d.]+) pts vs (.+)$/, (m) => `${m[1]} pts vs. ${label(m[2]) || m[2]}`],
+    [/^(\d+) below target$/, (m) => `${m[1]} debajo de la meta`],
+    [/^Tech (\w+)$/, (m) => `Técnico ${m[1]}`],
+    [/^Installs ([\d.]+)%, trouble calls ([\d.]+)%, SROs ([\d.]+)%$/, (m) => `Instalaciones ${m[1]}%, llamadas de servicio ${m[2]}%, SRO ${m[3]}%`],
+    [/^tNPS, last 3 months \((\d+) surveys\)$/, (m) => `tNPS, últimos 3 meses (${m[1]} encuestas)`],
+    [/^(\d+) surveys$/, (m) => `${m[1]} encuestas`],
+    [/^Tech (\w+) is at ([\d.]+%) FTR on (\d+) jobs\. They need (\d+) first-time fixes in a row, with no repeats, to reach ([\d.]+%) this month\.$/, (m) => `El técnico ${m[1]} tiene ${m[2]} de FTR en ${m[3]} trabajos. Necesita ${m[4]} reparaciones a la primera seguidas, sin repeticiones, para llegar a ${m[5]} este mes.`],
+    [/^Tech (\w+) is at ([\d.]+%) FTR on (\d+) jobs, which meets the ([\d.]+%) target\.$/, (m) => `El técnico ${m[1]} tiene ${m[2]} de FTR en ${m[3]} trabajos, lo que cumple la meta de ${m[4]}.`],
+    [/^Snapshot of (.+) to (.+), made (.+)\. This copy does not update by itself\.$/, (m) => `Datos del ${date(m[1])} al ${date(m[2])}, generado el ${date(m[3])}. Esta copia no se actualiza sola.`],
+    [/^(Tech \w+|Team), (.+?): (.+)$/, (m) => {
+      const who = m[1] === 'Team' ? 'Equipo' : m[1].replace('Tech', 'Técnico');
+      const v = m[3].replace('no data', 'sin datos').replace(/ on (\d+) jobs$/, ' en $1 trabajos').replace(/ on (\d+) surveys$/, ' en $1 encuestas').replace(/ on (\d+) trouble calls$/, ' en $1 llamadas de servicio');
+      return `${who}, ${label(m[2]) || m[2]}: ${v}`;
+    }],
+    [/^[A-Z][a-z]{2} \d{1,2}, \d{4}$/, (m) => date(m[0])]
+  ];
+  const tr = (t) => {
+    if (ES[t] != null) return ES[t];
+    for (const [re, f] of RULES) { const m = t.match(re); if (m) { const r = f(m); if (r != null) return r; } }
+    return null;
+  };
+  const ATTRS = ['title', 'placeholder', 'aria-label'];
+  const origText = new WeakMap();
+  let lang = 'en';
+  const skip = (el) => !el || el.closest('script,style,.lang-toggle');
+  function each(root, fnText, fnEl) {
+    if (root.nodeType === 3) { if (!skip(root.parentElement)) fnText(root); return; }
+    if (root.nodeType !== 1 || skip(root)) return;
+    fnEl(root);
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+    let n; while ((n = w.nextNode())) { if (n.nodeType === 3) { if (!skip(n.parentElement)) fnText(n); } else if (!skip(n)) fnEl(n); }
+  }
+  function toEs(root) {
+    each(root, (n) => {
+      if (!origText.has(n)) origText.set(n, n.nodeValue);
+      const o = origText.get(n), t = o.trim(); if (!t) return;
+      const r = tr(t); if (r != null) { const v = o.replace(t, r); if (n.nodeValue !== v) n.nodeValue = v; }
+    }, (el) => {
+      for (const a of ATTRS) {
+        if (!el.hasAttribute(a)) continue;
+        const key = 'data-en-' + a;
+        if (!el.hasAttribute(key)) el.setAttribute(key, el.getAttribute(a));
+        const r = tr(el.getAttribute(key).trim());
+        if (r != null && el.getAttribute(a) !== r) el.setAttribute(a, r);
+      }
+    });
+  }
+  function toEn(root) {
+    each(root, (n) => { if (origText.has(n) && n.nodeValue !== origText.get(n)) n.nodeValue = origText.get(n); },
+      (el) => { for (const a of ATTRS) { const key = 'data-en-' + a; if (el.hasAttribute(key) && el.getAttribute(a) !== el.getAttribute(key)) el.setAttribute(a, el.getAttribute(key)); } });
+  }
+  const obs = new MutationObserver((recs) => {
+    if (lang !== 'es') return;
+    for (const r of recs) {
+      if (r.type === 'childList') r.addedNodes.forEach((n) => toEs(n));
+      else if (r.type === 'characterData') { if (!origText.has(r.target) || tr(r.target.nodeValue.trim()) != null) { origText.delete(r.target); toEs(r.target); } }
+      else if (r.type === 'attributes' && ATTRS.includes(r.attributeName)) {
+        const el = r.target, key = 'data-en-' + r.attributeName, cur = el.getAttribute(r.attributeName);
+        if (cur != null && tr(cur.trim()) != null) el.setAttribute(key, cur);
+        toEs(el);
+      }
+    }
+  });
+  function setLang(l) {
+    lang = l === 'es' ? 'es' : 'en';
+    document.documentElement.lang = lang;
+    document.title = lang === 'es' ? 'Tablero de técnicos Broward y Dade' : 'Broward & Dade Tech Scorecard';
+    try { localStorage.setItem('sc-lang', lang); } catch (e) {}
+    document.querySelectorAll('[data-lang-choice]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.langChoice === lang)));
+    if (lang === 'es') toEs(document.body); else { toEn(document.body); if (window.__dashRunAll) window.__dashRunAll(); }
+  }
+  document.addEventListener('DOMContentLoaded', () => {
+    obs.observe(document.body, { childList: true, characterData: true, attributes: true, attributeFilter: ATTRS, subtree: true });
+    document.querySelectorAll('[data-lang-choice]').forEach((b) => b.addEventListener('click', () => setLang(b.dataset.langChoice)));
+    let saved = 'en'; try { saved = localStorage.getItem('sc-lang') || 'en'; } catch (e) {}
+    setLang(saved);
+  });
+})();
+
 </script>
 </body>
 </html>
