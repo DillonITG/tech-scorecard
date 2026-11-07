@@ -334,9 +334,9 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   .sc-lane .who { display: grid; gap: 1px; min-width: 0; }
   .sc-lane .who b { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); }
   .sc-lane .who span { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
-  .sc-lane .track { position: relative; height: 30px; border-radius: 999px; background: repeating-linear-gradient(90deg, var(--cds-chart-grid) 0 14px, transparent 14px 22px) center / 100% 2px no-repeat, color-mix(in srgb, var(--cds-chart-grid) 55%, transparent); }
-  .sc-lane .track .flag { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-size: 16px; }
-  .sc-lane .track .car { position: absolute; top: 50%; transform: translate(-50%, -58%) scaleX(-1); font-size: 22px; line-height: 1; display: block; transition: left var(--cds-dur-slow) ease; }
+  .sc-lane .track { position: relative; height: 44px; border-radius: 999px; background: repeating-linear-gradient(90deg, var(--cds-chart-grid) 0 14px, transparent 14px 22px) center / 100% 2px no-repeat, color-mix(in srgb, var(--cds-chart-grid) 55%, transparent); }
+  .sc-lane .track .flag { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 22px; }
+  .sc-lane .track .car { position: absolute; top: 50%; transform: translate(-50%, -64%) scaleX(-1); font-size: 34px; line-height: 1; display: block; transition: left var(--cds-dur-slow) ease; }
   .sc-lane .pts { font-family: var(--font-anthropic-serif); font-size: calc(var(--cds-font-size-title) * .8); line-height: 1; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
   .sc-lane .gap { grid-column: 2 / -1; margin: 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
   .sc-lane.first .gap { color: var(--color-ok); font-weight: 600; }
@@ -1383,7 +1383,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     if (!top.length) { const p = document.createElement('p'); p.className = 'sc-race-foot'; p.textContent = 'Not enough techs qualify yet.'; el.appendChild(p); return; }
     const mk = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
     const hi = top[0].score, lo = Math.min(...top.map((r) => r.score)) - 3;
-    const pos = (v) => 6 + 82 * (hi === lo ? 1 : (v - lo) / (hi - lo));
+    const pos = (v) => 6 + 78 * (hi === lo ? 1 : (v - lo) / (hi - lo));
     const medals = ['🥇', '🥈', '🥉'];
     top.forEach((r, i) => {
       const lane = mk('div', 'sc-lane' + (i === 0 ? ' first' : ''));
