@@ -49,6 +49,12 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
 .theme-toggle button:focus-visible { outline: 2px solid var(--cds-chart-axis); outline-offset: 2px; }
 .theme-toggle svg { width: 13px; height: 13px; }
 .toggles { display: flex; gap: 8px; flex-wrap: wrap; }
+.team-toggle { align-items: center; }
+.team-toggle .team-label { font-size: 12px; color: var(--color-fg-muted); padding: 0 6px 0 10px; }
+.team-toggle a { font-size: 13px; font-weight: 600; text-decoration: none; color: var(--color-fg-muted); padding: 5px 18px; border-radius: 999px; }
+.team-toggle a:hover { color: var(--color-fg); }
+.team-toggle a[aria-current="page"] { background: var(--color-fg); color: var(--color-bg); }
+.team-toggle a:focus-visible { outline: 2px solid var(--cds-chart-axis); outline-offset: 2px; }
 .dash-select { font: inherit; font-size: 13px; padding: 5px 9px; border: 1px solid var(--color-border-line); border-radius: 8px; background-color: var(--color-bg); color: var(--color-fg); max-width: 100%; }
 .dash-skeleton { min-height: 1em; }
 [hidden] { display: none !important; }
@@ -99,6 +105,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
 <div id="dash-root">
 <div class="snap-bar">
 <p class="snap-stamp">Snapshot of May 22, 2026 to Nov 4, 2026, made Nov 7, 2026. This copy does not update by itself.</p>
+<nav class="theme-toggle team-toggle" aria-label="Team"><span class="team-label">Team</span><a href="./" aria-current="page">Dillon</a><a href="jim.html">Jim</a></nav>
 <div class="toggles">
 <div class="theme-toggle lang-toggle" role="group" aria-label="Language / Idioma / Lang">
 <button type="button" data-lang-choice="en" aria-pressed="true">English</button>
@@ -1639,7 +1646,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     'Job': 'Trabajo', 'Observer': 'Observador', 'Open QC': 'Abrir QC', 'No QCs by other observers in the last 30 days.': 'No hay QC de otros observadores en los últimos 30 días.',
     'No tech met all three targets with at least 40 jobs over the last 30 days.': 'Ningún técnico cumplió las tres metas con al menos 40 trabajos en los últimos 30 días.',
     'Lines mark where a new fiscal month starts. A week that crosses the 22nd goes with the month that has most of its days.': 'Las líneas marcan dónde empieza un nuevo mes fiscal. Una semana que cruza el día 22 va con el mes que tiene la mayoría de sus días.', 'tNPS, last 3 months': 'tNPS, últimos 3 meses', 'Timeframe': 'Período', 'Weeks are grouped under their fiscal month. A week that crosses the 22nd goes with the month that has most of its days.': 'Las semanas se agrupan bajo su mes fiscal. Una semana que cruza el día 22 va con el mes que tiene la mayoría de sus días.', 'Feedback': 'Comentarios', 'Surveys by tech': 'Encuestas por técnico', 'Number of surveys and tNPS for each tech. Select a tech to see only theirs.': 'Número de encuestas y tNPS de cada técnico. Selecciona un técnico para ver solo las suyas.', 'Newest first, as customers wrote them. Passives and detractors always show, with or without a comment.': 'Las más recientes primero, tal como las escribieron los clientes. Los pasivos y detractores siempre aparecen, con o sin comentario.', 'Surveys': 'Encuestas', 'Passives (7–8)': 'Pasivos (7–8)', 'Detractors (0–6)': 'Detractores (0–6)', 'No comment left': 'Sin comentario', 'Hide promoter surveys with no comment': 'Ocultar encuestas de promotores sin comentario', 'All surveys': 'Todas las encuestas', 'No surveys yet.': 'Aún no hay encuestas.', 'Customer feedback': 'Comentarios de clientes', 'Comments by tech': 'Comentarios por técnico', 'Select a tech to see only their comments.': 'Selecciona un técnico para ver solo sus comentarios.', 'What customers mention': 'Lo que mencionan los clientes', 'How many comments bring up each theme. Select one to filter; matching words are highlighted.': 'Cuántos comentarios mencionan cada tema. Selecciona uno para filtrar; las palabras que coinciden se resaltan.', 'All comments': 'Todos los comentarios', 'Newest first, as customers wrote them.': 'Los más recientes primero, tal como los escribieron los clientes.', 'Comments': 'Comentarios', 'Average score': 'Puntuación promedio', 'Out of 10': 'De 10', 'Promoters (9–10)': 'Promotores (9–10)', 'Passives and detractors (0–8)': 'Pasivos y detractores (0–8)', 'All': 'Todos', 'Promoters': 'Promotores', 'Passives': 'Pasivos', 'Detractors': 'Detractores', 'No comments match.': 'Ningún comentario coincide.', 'No survey comments yet.': 'Aún no hay comentarios de encuestas.', 'Knowledgeable': 'Conocedor', 'Professional': 'Profesional', 'Friendly and pleasant': 'Amable y agradable', 'Helpful': 'Servicial', 'Quick and on time': 'Rápido y puntual', 'Explained things': 'Explicó todo', 'Fixed the problem': 'Resolvió el problema', 'Score': 'Puntuación', 'Slide left to look further back.': 'Desliza a la izquierda para ver más atrás.', '1 month': '1 mes',
-    'Color theme': 'Tema de color', 'Language': 'Idioma', 'Scorecard pages': 'Páginas del tablero', 'no data': 'sin datos'
+    'Color theme': 'Tema de color', 'BP-Ontrac Team Metrics for Jim’s team, pulled one fiscal month at a time and one week at a time.': 'Métricas de equipo de BP-Ontrac para el equipo de Jim, descargadas por mes fiscal y por semana.', 'Language': 'Idioma', 'Scorecard pages': 'Páginas del tablero', 'no data': 'sin datos'
   };
   const MH = { Jan: 'jan', Feb: 'fev', Mar: 'mas', Apr: 'avr', May: 'me', Jun: 'jen', Jul: 'jiy', Aug: 'out', Sep: 'sep', Oct: 'okt', Nov: 'nov', Dec: 'des' };
   const moh = (m) => MH[m] || m;
@@ -1734,7 +1741,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     'Newest first. Select Photos to see the pictures from each QC. Photos that show a house number or other customer details are left out.': 'Sa ki pi resan yo an premye. Chwazi Foto pou wè foto chak QC. Foto ki montre nimewo kay la oswa lòt enfòmasyon kliyan an pa ladan yo.', 'Photos': 'Foto', 'Close': 'Fèmen', 'Previous photo': 'Foto anvan', 'Next photo': 'Pwochen foto',
     'QCs': 'QC', 'Techs with a QC': 'Teknisyen ki gen QC', 'Out of 100': 'Sou 100', 'TQI alerts': 'Alèt TQI', 'Completed': 'Fini',
     'Job': 'Travay', 'Observer': 'Obsèvatè', 'Open QC': 'Louvri QC', 'No QCs by other observers in the last 30 days.': 'Pa gen QC lòt obsèvatè nan 30 dènye jou yo.',
-    'Color theme': 'Koulè', 'Language': 'Lang', 'Scorecard pages': 'Paj tablo a', 'no data': 'pa gen done'
+    'Color theme': 'Koulè', 'BP-Ontrac Team Metrics for Jim’s team, pulled one fiscal month at a time and one week at a time.': 'Mezi ekip BP-Ontrac pou ekip Jim, rale youn mwa fiskal alafwa ak youn semèn alafwa.', 'Language': 'Lang', 'Scorecard pages': 'Paj tablo a', 'no data': 'pa gen done'
   };
   const labelHT = (s) => {
     let m;
