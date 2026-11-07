@@ -100,9 +100,10 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
 <div class="snap-bar">
 <p class="snap-stamp">Snapshot of May 22, 2026 to Nov 4, 2026, made Nov 7, 2026. This copy does not update by itself.</p>
 <div class="toggles">
-<div class="theme-toggle lang-toggle" role="group" aria-label="Language / Idioma">
+<div class="theme-toggle lang-toggle" role="group" aria-label="Language / Idioma / Lang">
 <button type="button" data-lang-choice="en" aria-pressed="true">English</button>
 <button type="button" data-lang-choice="es" aria-pressed="false">Español</button>
+<button type="button" data-lang-choice="ht" aria-pressed="false" lang="ht">Kreyòl</button>
 </div>
 <div class="theme-toggle" role="group" aria-label="Color theme">
 <button type="button" data-theme-choice="light" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Light</button>
@@ -1491,6 +1492,153 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     'Lines mark where a new fiscal month starts. A week that crosses the 22nd goes with the month that has most of its days.': 'Las líneas marcan dónde empieza un nuevo mes fiscal. Una semana que cruza el día 22 va con el mes que tiene la mayoría de sus días.', 'tNPS, last 3 months': 'tNPS, últimos 3 meses', 'Timeframe': 'Período', 'Feedback': 'Comentarios', 'Surveys by tech': 'Encuestas por técnico', 'Number of surveys and tNPS for each tech. Select a tech to see only theirs.': 'Número de encuestas y tNPS de cada técnico. Selecciona un técnico para ver solo las suyas.', 'Newest first, as customers wrote them. Passives and detractors always show, with or without a comment.': 'Las más recientes primero, tal como las escribieron los clientes. Los pasivos y detractores siempre aparecen, con o sin comentario.', 'Surveys': 'Encuestas', 'Passives (7–8)': 'Pasivos (7–8)', 'Detractors (0–6)': 'Detractores (0–6)', 'No comment left': 'Sin comentario', 'Hide promoter surveys with no comment': 'Ocultar encuestas de promotores sin comentario', 'All surveys': 'Todas las encuestas', 'No surveys yet.': 'Aún no hay encuestas.', 'Customer feedback': 'Comentarios de clientes', 'Comments by tech': 'Comentarios por técnico', 'Select a tech to see only their comments.': 'Selecciona un técnico para ver solo sus comentarios.', 'What customers mention': 'Lo que mencionan los clientes', 'How many comments bring up each theme. Select one to filter; matching words are highlighted.': 'Cuántos comentarios mencionan cada tema. Selecciona uno para filtrar; las palabras que coinciden se resaltan.', 'All comments': 'Todos los comentarios', 'Newest first, as customers wrote them.': 'Los más recientes primero, tal como los escribieron los clientes.', 'Comments': 'Comentarios', 'Average score': 'Puntuación promedio', 'Out of 10': 'De 10', 'Promoters (9–10)': 'Promotores (9–10)', 'Passives and detractors (0–8)': 'Pasivos y detractores (0–8)', 'All': 'Todos', 'Promoters': 'Promotores', 'Passives': 'Pasivos', 'Detractors': 'Detractores', 'No comments match.': 'Ningún comentario coincide.', 'No survey comments yet.': 'Aún no hay comentarios de encuestas.', 'Knowledgeable': 'Conocedor', 'Professional': 'Profesional', 'Friendly and pleasant': 'Amable y agradable', 'Helpful': 'Servicial', 'Quick and on time': 'Rápido y puntual', 'Explained things': 'Explicó todo', 'Fixed the problem': 'Resolvió el problema', 'Score': 'Puntuación', 'Slide left to look further back.': 'Desliza a la izquierda para ver más atrás.', '1 month': '1 mes',
     'Color theme': 'Tema de color', 'Language': 'Idioma', 'Scorecard pages': 'Páginas del tablero', 'no data': 'sin datos'
   };
+  const MH = { Jan: 'jan', Feb: 'fev', Mar: 'mas', Apr: 'avr', May: 'me', Jun: 'jen', Jul: 'jiy', Aug: 'out', Sep: 'sep', Oct: 'okt', Nov: 'nov', Dec: 'des' };
+  const moh = (m) => MH[m] || m;
+  const HT = {
+    'Broward & Dade tech scorecard': 'Tablo teknisyen Broward ak Dade',
+    'of': 'sou',
+    'techs are meeting all three targets in': 'teknisyen ap rive nan twa objektif yo nan',
+    '. FTR is where the team most often falls short. Fiscal months run from the 22nd to the 21st, and the latest one is still in progress.': '. FTR se kote ekip la pi souvan pa rive. Mwa fiskal yo kòmanse 22 epi fini 21 mwa apre a, e dènye a poko fini.',
+    'Overview': 'Rezime', 'Techs': 'Teknisyen', 'Weekly': 'Chak semèn', 'Feedback': 'Kòmantè',
+    'Light': 'Klè', 'Dark': 'Fonse',
+    'Tool usage': 'Itilizasyon zouti',
+    'Share of eligible jobs where the tech ran the tool.': 'Pousantaj travay ki kalifye kote teknisyen an te itilize zouti a.',
+    'tNPS': 'tNPS',
+    'Promoters minus detractors, as a share of all surveys.': 'Pwomotè mwens detraktè, kòm pousantaj tout sondaj yo.',
+    'FTR': 'FTR',
+    'Share of jobs fixed the first time, with no repeat visit.': 'Pousantaj travay ki ranje premye fwa a, san vizit ankò.',
+    'Target': 'Objektif', 'On target': 'Nan objektif', 'Below target': 'Anba objektif',
+    'What drives FTR and the customer experience': 'Sa ki fè FTR ak eksperyans kliyan an monte',
+    'No company target is set for these, so the trend is what matters. Lower is better for repeats and rework.': 'Konpayi a pa mete objektif pou sa yo, kidonk se tandans lan ki konte. Pou repetisyon ak retravay, pi ba pi bon.',
+    'Repeat rate': 'To repetisyon',
+    'Trouble calls with a repeat visit for the same issue.': 'Apèl pou pwoblèm ki te bezwen yon lòt vizit pou menm pwoblèm nan.',
+    'Rework rate': 'To retravay',
+    'Installs and trouble calls that needed rework.': 'Enstalasyon ak apèl pou pwoblèm ki te bezwen retravay.',
+    'PHT pass rate': 'To reyisit PHT',
+    'Premise health tests that passed.': 'Tès sante lokal (PHT) ki pase.',
+    'Appointments met': 'Randevou respekte',
+    'Appointments where the tech arrived in the window.': 'Randevou kote teknisyen an rive nan lè a.',
+    'Watch list': 'Lis siveyans',
+    'Techs below target on the same metric in each of the last two fiscal months.': 'Teknisyen ki anba objektif sou menm mezi a nan chak nan de dènye mwa fiskal yo.',
+    'No tech has missed the same target two months running.': 'Pa gen teknisyen ki rate menm objektif la de mwa youn dèyè lòt.',
+    'Tech': 'Teknisyen', 'Metric': 'Mezi', 'Last month': 'Mwa pase', 'This month': 'Mwa sa a',
+    'Techs this fiscal month': 'Teknisyen mwa fiskal sa a',
+    'Red values are below target. A small “low” mark means too few surveys to judge. Select a tech to see their detail below.': 'Chif an wouj yo anba objektif. Ti mak “piti” a vle di pa gen ase sondaj pou jije. Chwazi yon teknisyen pou wè detay li anba a.',
+    'Find a tech': 'Chèche yon teknisyen',
+    'Job mix:': 'Kalite travay:', 'Installs': 'Enstalasyon', 'Trouble calls': 'Apèl pou pwoblèm', 'SROs': 'SRO',
+    'Status': 'Estati', 'Jobs': 'Travay', 'Job mix': 'Kalite travay', 'tNPS 3 mo': 'tNPS 3 mwa',
+    'Fixes to target': 'Pou rive nan objektif', 'Repeat': 'Repetisyon', 'Rework': 'Retravay', 'PHT pass': 'PHT pase',
+    'Appts met': 'Randevou respekte', 'FTR, 6 months': 'FTR, 6 mwa', 'low': 'piti',
+    'Tech detail': 'Detay teknisyen',
+    'Monthly rates for the selected tech against the team, with the target as a dashed line.': 'To chak mwa pou teknisyen ou chwazi a konpare ak ekip la, ak objektif la an liy pwentiye.',
+    'Jobs this month': 'Travay mwa sa a', 'Installs / trouble calls': 'Enstalasyon / apèl pou pwoblèm',
+    'Selected tech': 'Teknisyen chwazi', 'Team': 'Ekip', 'Coaching note': 'Nòt coaching', 'Coaching notes': 'Nòt coaching',
+    'No coaching notes for this tech yet. Ask Claude to log one, for example: “Log a coaching note for 7189: reviewed drop bonding on 11/6.”': 'Poko gen nòt coaching pou teknisyen sa a.',
+    'Week by week': 'Semèn pa semèn',
+    'Monday-to-Sunday weeks, so a slide shows up before the fiscal month closes. The last week is partial.': 'Semèn lendi rive dimanch, pou w ka wè yon bès anvan mwa fiskal la fèmen. Dènye semèn nan pa konplè.',
+    'Team FTR by week': 'FTR ekip la chak semèn', 'Team tNPS by week': 'tNPS ekip la chak semèn', 'Team repeat rate by week': 'To repetisyon ekip la chak semèn',
+    'Each tech by week': 'Chak teknisyen pa semèn',
+    'Green meets target, amber is close, red is below. Faded cells had too few jobs or surveys to judge.': 'Vèt rive nan objektif, jòn prèske, wouj anba. Selil ki pal yo pa t gen ase travay oswa sondaj pou jije.',
+    'How these numbers are worked out': 'Kijan nou kalkile chif sa yo',
+    'Source': 'Sous',
+    'BP-Ontrac Team Metrics for the Broward and Dade team, pulled one fiscal month at a time and one week at a time.': 'Mezi ekip BP-Ontrac pou ekip Broward ak Dade, rale youn mwa fiskal alafwa ak youn semèn alafwa.',
+    'Fiscal month': 'Mwa fiskal',
+    'The 22nd of one month to the 21st of the next, named for the month it ends in. The latest month runs to the most recent day BP-Ontrac allows.': '22 yon mwa rive 21 mwa apre a, li pote non mwa li fini an. Dènye mwa a rive jis nan dènye jou BP-Ontrac pèmèt.',
+    'Team totals': 'Total ekip la',
+    'Counts are added across techs before the rate is worked out, so busier techs carry more weight.': 'Nou adisyone kantite tout teknisyen yo anvan nou kalkile to a, kidonk teknisyen ki fè plis travay yo konte plis.',
+    'Targets': 'Objektif', ', tNPS': ', tNPS', ', FTR': ', FTR',
+    'Promoters minus detractors over all surveys in the last three fiscal months, which steadies small monthly samples. A tech’s monthly tNPS counts as a miss only with at least 5 surveys that month.': 'Pwomotè mwens detraktè sou tout sondaj twa dènye mwa fiskal yo, sa ki estabilize ti echantiyon chak mwa. tNPS yon teknisyen pou yon mwa konte kòm rate sèlman si li gen omwen 5 sondaj mwa sa a.',
+    'How many first-time fixes in a row the tech needs, with no repeats, to bring this month’s FTR up to target.': 'Konbyen reparasyon premye fwa youn dèyè lòt, san repetisyon, teknisyen an bezwen pou FTR mwa sa a rive nan objektif.',
+    'Repeat visits as a share of trouble calls.': 'Vizit repetisyon kòm pousantaj apèl pou pwoblèm.',
+    'Rework as a share of installs and trouble calls.': 'Retravay kòm pousantaj enstalasyon ak apèl pou pwoblèm.',
+    'Premise health tests without a failure, as a share of all tests.': 'Tès sante lokal san echèk, kòm pousantaj tout tès yo.',
+    'Weekly view': 'Vi chak semèn',
+    'A week counts as too small to judge with fewer than 10 FTR jobs, 3 surveys or 8 trouble calls.': 'Yon semèn twò piti pou jije si li gen mwens pase 10 travay FTR, 3 sondaj oswa 8 apèl pou pwoblèm.',
+    'Left out': 'Pa enkli',
+    'Tech 7026 shows jobs but no tool usage, survey or FTR data, so it is not included.': 'Teknisyen 7026 gen travay men li pa gen done itilizasyon zouti, sondaj oswa FTR, kidonk li pa enkli.',
+    'No jobs this month': 'Pa gen travay mwa sa a',
+    'Above team avg': 'Pi wo pase mwayèn ekip la', 'Below team avg': 'Pi ba pase mwayèn ekip la', 'Worse than team': 'Pi mal pase ekip la', 'Better than team': 'Pi bon pase ekip la',
+    'Lower is better': 'Pi ba pi bon', 'In line with team': 'Menm jan ak ekip la',
+    'Top tech · last 30 days ·': 'Pi bon teknisyen · 30 dènye jou ·', 'No winner this period': 'Pa gen gayan pou peryòd sa a',
+    'Top tech of the last 30 days': 'Pi bon teknisyen 30 dènye jou yo',
+    'No tech met all three targets with at least 40 jobs over the last 30 days.': 'Pa gen teknisyen ki rive nan twa objektif yo ak omwen 40 travay nan 30 dènye jou yo.',
+    'Lines mark where a new fiscal month starts. A week that crosses the 22nd goes with the month that has most of its days.': 'Liy yo montre kote yon nouvo mwa fiskal kòmanse. Yon semèn ki travèse 22 a ale ak mwa ki gen plis nan jou li yo.',
+    'tNPS, last 3 months': 'tNPS, 3 dènye mwa', 'Timeframe': 'Peryòd',
+    'Slide left to look further back.': 'Glise sou bò goch pou gade pi lwen dèyè.', '1 month': '1 mwa',
+    'Customer feedback': 'Kòmantè kliyan yo', 'Surveys by tech': 'Sondaj pa teknisyen',
+    'Number of surveys and tNPS for each tech. Select a tech to see only theirs.': 'Kantite sondaj ak tNPS pou chak teknisyen. Chwazi yon teknisyen pou wè sèlman pa l yo.',
+    'What customers mention': 'Sa kliyan yo pale de li',
+    'How many comments bring up each theme. Select one to filter; matching words are highlighted.': 'Konbyen kòmantè ki pale de chak tèm. Chwazi youn pou filtre; mo ki koresponn yo make.',
+    'Newest first, as customers wrote them. Passives and detractors always show, with or without a comment.': 'Sa ki pi resan yo an premye, jan kliyan yo te ekri yo. Pasif ak detraktè toujou parèt, avèk oswa san kòmantè.',
+    'Surveys': 'Sondaj', 'Promoters (9–10)': 'Pwomotè (9–10)', 'Passives (7–8)': 'Pasif (7–8)', 'Detractors (0–6)': 'Detraktè (0–6)',
+    'All': 'Tout', 'Promoters': 'Pwomotè', 'Passives': 'Pasif', 'Detractors': 'Detraktè',
+    'No comment left': 'Pa gen kòmantè', 'Hide promoter surveys with no comment': 'Kache sondaj pwomotè ki pa gen kòmantè',
+    'All surveys': 'Tout sondaj', 'No surveys yet.': 'Poko gen sondaj.', 'No comments match.': 'Pa gen kòmantè ki koresponn.',
+    'Knowledgeable': 'Konn travay li', 'Professional': 'Pwofesyonèl', 'Friendly and pleasant': 'Janti e agreyab', 'Helpful': 'Ede anpil',
+    'Quick and on time': 'Rapid e alè', 'Explained things': 'Te esplike bagay yo', 'Fixed the problem': 'Te ranje pwoblèm nan', 'Score': 'Nòt',
+    'Comments': 'Kòmantè', 'Average score': 'Nòt mwayèn', 'Out of 10': 'Sou 10',
+    'Color theme': 'Koulè', 'Language': 'Lang', 'Scorecard pages': 'Paj tablo a', 'no data': 'pa gen done'
+  };
+  const labelHT = (s) => {
+    let m;
+    if ((m = s.match(/^([A-Z][a-z]{2}) FM \(to date\)$/))) return `MF ${moh(m[1])} (an kou)`;
+    if ((m = s.match(/^([A-Z][a-z]{2}) FM$/))) return `MF ${moh(m[1])}`;
+    if ((m = s.match(/^Wk ([A-Z][a-z]{2}) (\d{1,2})( \(partial\))?$/))) return `Smn. ${m[2]} ${moh(m[1])}${m[3] ? ' (pa konplè)' : ''}`;
+    return null;
+  };
+  const dateHT = (s) => s.replace(/\b([A-Z][a-z]{2}) (\d{1,2}), (\d{4})\b/g, (_, m, d, y) => `${d} ${moh(m)} ${y}`);
+  const RULES_HT = [
+    [/^.+$/, (m) => labelHT(m[0])],
+    [/^([A-Z][a-z]{2}) MTD$/, (m) => `${moh(m[1])}*`],
+    [/^([A-Z][a-z]{2}) (\d{1,2})(\*?)$/, (m) => MH[m[1]] ? `${m[2]} ${moh(m[1])}${m[3]}` : null],
+    [/^([A-Z][a-z]{2})$/, (m) => MH[m[1]] ? moh(m[1]) : null],
+    [/^([+−±][\d.]+) pts vs (.+)$/, (m) => `${m[1]} pwen konpare ak ${labelHT(m[2]) || (m[2] === 'team' ? 'ekip la' : m[2])}`],
+    [/^(\d+) below target$/, (m) => `${m[1]} anba objektif`],
+    [/^Tech (\w+)$/, (m) => `Teknisyen ${m[1]}`],
+    [/^Installs ([\d.]+)%, trouble calls ([\d.]+)%, SROs ([\d.]+)%$/, (m) => `Enstalasyon ${m[1]}%, apèl pou pwoblèm ${m[2]}%, SRO ${m[3]}%`],
+    [/^tNPS, last 3 months \((\d+) surveys\)$/, (m) => `tNPS, 3 dènye mwa (${m[1]} sondaj)`],
+    [/^(Surveys for Tech (\w+)|All surveys)(?: · (.+))?$/, (m) => (m[2] ? `Sondaj teknisyen ${m[2]}` : 'Tout sondaj') + (m[3] ? ' · ' + (tr(m[3]) || m[3]) : '')],
+    [/^([A-Z][a-z]{2}) FM \(to date\): every tNPS survey from ([A-Z][a-z]{2}) (\d{1,2}) to ([A-Z][a-z]{2}) (\d{1,2})\. (\d+) of (\d+) have a written comment\.$/, (m) => `MF ${moh(m[1])} (an kou): tout sondaj tNPS depi ${m[3]} ${moh(m[2])} rive ${m[5]} ${moh(m[4])}. ${m[6]} sou ${m[7]} gen yon kòmantè ekri.`],
+    [/^Every tNPS survey from ([A-Z][a-z]{2}) (\d{1,2}) to ([A-Z][a-z]{2}) (\d{1,2})\. (\d+) of (\d+) have a written comment\.$/, (m) => `Tout sondaj tNPS depi ${m[2]} ${moh(m[1])} rive ${m[4]} ${moh(m[3])}. ${m[5]} sou ${m[6]} gen yon kòmantè ekri.`],
+    [/^(\d+) with comments$/, (m) => `${m[1]} ak kòmantè`],
+    [/^Show (\d+) promoter surveys with no comment$/, (m) => `Montre ${m[1]} sondaj pwomotè ki pa gen kòmantè`],
+    [/^· ([A-Z][a-z]{2}) (\d{1,2})$/, (m) => `· ${m[2]} ${moh(m[1])}`],
+    [/^Techs, last (\d+) months$/, (m) => `Teknisyen, ${m[1]} dènye mwa`],
+    [/^Jobs, last (\d+) months$/, (m) => `Travay, ${m[1]} dènye mwa`],
+    [/^tNPS, last (\d+) months$/, (m) => `tNPS, ${m[1]} dènye mwa`],
+    [/^(\d+) months$/, (m) => `${m[1]} mwa`],
+    [/^≈ (\d+) a month$/, (m) => `≈ ${m[1]} pa mwa`],
+    [/^Worked (\d+) of (\d+) months$/, (m) => `Te travay ${m[1]} sou ${m[2]} mwa`],
+    [/^(.+ FM(?: \(to date\))?) – (.+ FM(?: \(to date\))?)$/, (m) => labelHT(m[1]) && labelHT(m[2]) ? `${labelHT(m[1])} – ${labelHT(m[2])}` : null],
+    [/^(\d+) surveys$/, (m) => `${m[1]} sondaj`],
+    [/^▲ Team avg (.+)$/, (m) => `▲ Mwayèn ekip la ${m[1]}`],
+    [/^▲ Team installs (.+)$/, (m) => `▲ Enstalasyon ekip la ${m[1]}`],
+    [/^▲ Team (.+)$/, (m) => `▲ Ekip ${m[1]}`],
+    [/^Target ([\d.]+%)$/, (m) => `Objektif ${m[1]}`],
+    [/^Installs ([\d.]+%|—)$/, (m) => `Enstalasyon ${m[1]}`],
+    [/^Trouble calls ([\d.]+%|—)$/, (m) => `Apèl pou pwoblèm ${m[1]}`],
+    [/^SROs ([\d.]+%|—)$/, (m) => `SRO ${m[1]}`],
+    [/^From (.+)$/, (m) => `Soti nan ${labelHT(m[1]) || m[1]}`],
+    [/^([A-Z][a-z]{2}) (\d{1,2}) – ([A-Z][a-z]{2}) (\d{1,2})$/, (m) => `${m[2]} ${moh(m[1])} – ${m[4]} ${moh(m[3])}`],
+    [/^Congratulations! Met every target over the last 30 days with the team’s best first-time-fix rate, ([\d.]+%) on (\d+) jobs\.$/, (m) => `Konpliman! Li rive nan tout objektif yo nan 30 dènye jou yo ak pi bon to reparasyon premye fwa nan ekip la: ${m[1]} sou ${m[2]} travay.`],
+    [/^([+−±][\d.]+) pts vs team$/, (m) => `${m[1]} pwen konpare ak ekip la`],
+    [/^Congratulations! Met every target over the last 30 days, with ([\d.]+%) first-time fixes on (\d+) jobs\.$/, (m) => `Konpliman! Li rive nan tout objektif yo nan 30 dènye jou yo, ak ${m[1]} reparasyon premye fwa sou ${m[2]} travay.`],
+    [/^Team avg (.+)$/, (m) => `Mwayèn ekip la ${m[1]}`],
+    [/^Team ([\d.]+%)$/, (m) => `Ekip ${m[1]}`],
+    [/^(?:Also met every target: (.+)\. )?To qualify, a tech needs at least 40 jobs and has to meet all three targets over the 30 days\.$/, (m) => (m[1] ? `Te rive nan tout objektif yo tou: ${m[1]}. ` : '') + 'Pou kalifye, yon teknisyen bezwen omwen 40 travay epi rive nan twa objektif yo pandan 30 jou yo.'],
+    [/^([A-Z][a-z]{2}) (\d{1,2}) – ([A-Z][a-z]{2}) (\d{1,2}), counted in (.+)$/, (m) => `${m[2]} ${moh(m[1])} – ${m[4]} ${moh(m[3])}, konte nan ${labelHT(m[5]) || m[5]}`],
+    [/^Tech (\w+) has no jobs this fiscal month\. The numbers shown are from (.+)\.$/, (m) => `Teknisyen ${m[1]} pa gen travay mwa fiskal sa a. Chif yo soti nan ${labelHT(m[2]) || m[2]}.`],
+    [/^Last jobs in (.+); numbers shown are from then\.$/, (m) => `Dènye travay nan ${labelHT(m[1]) || m[1]}; chif yo soti nan mwa sa a.`],
+    [/^Tech (\w+) is at ([\d.]+%) FTR on (\d+) jobs\. They need (\d+) first-time fixes in a row, with no repeats, to reach ([\d.]+%) this month\.$/, (m) => `Teknisyen ${m[1]} gen ${m[2]} FTR sou ${m[3]} travay. Li bezwen ${m[4]} reparasyon premye fwa youn dèyè lòt, san repetisyon, pou rive ${m[5]} mwa sa a.`],
+    [/^Tech (\w+) is at ([\d.]+%) FTR on (\d+) jobs, which meets the ([\d.]+%) target\.$/, (m) => `Teknisyen ${m[1]} gen ${m[2]} FTR sou ${m[3]} travay, sa ki rive nan objektif ${m[4]} an.`],
+    [/^Snapshot of (.+) to (.+), made (.+)\. This copy does not update by itself\.$/, (m) => `Done depi ${dateHT(m[1])} rive ${dateHT(m[2])}, fè ${dateHT(m[3])}. Kopi sa a pa mete tèt li ajou poukont li.`],
+    [/^(Tech \w+|Team), (.+?): (.+)$/, (m) => {
+      const who = m[1] === 'Team' ? 'Ekip' : m[1].replace('Tech', 'Teknisyen');
+      const v = m[3].replace('no data', 'pa gen done').replace(/ on (\d+) jobs$/, ' sou $1 travay').replace(/ on (\d+) surveys$/, ' sou $1 sondaj').replace(/ on (\d+) trouble calls$/, ' sou $1 apèl pou pwoblèm');
+      return `${who}, ${labelHT(m[2]) || m[2]}: ${v}`;
+    }],
+    [/^[A-Z][a-z]{2} \d{1,2}, \d{4}$/, (m) => dateHT(m[0])]
+  ];
   const date = (s) => s.replace(/\b([A-Z][a-z]{2}) (\d{1,2}), (\d{4})\b/g, (_, m, d, y) => `${d} ${mo(m)} ${y}`);
   const label = (s) => {
     let m;
@@ -1553,8 +1701,9 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     [/^[A-Z][a-z]{2} \d{1,2}, \d{4}$/, (m) => date(m[0])]
   ];
   const tr = (t) => {
-    if (ES[t] != null) return ES[t];
-    for (const [re, f] of RULES) { const m = t.match(re); if (m) { const r = f(m); if (r != null) return r; } }
+    const D = lang === 'ht' ? HT : ES, R = lang === 'ht' ? RULES_HT : RULES;
+    if (D[t] != null) return D[t];
+    for (const [re, f] of R) { const m = t.match(re); if (m) { const r = f(m); if (r != null) return r; } }
     return null;
   };
   const ATTRS = ['title', 'placeholder', 'aria-label'];
@@ -1588,7 +1737,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       (el) => { for (const a of ATTRS) { const key = 'data-en-' + a; if (el.hasAttribute(key) && el.getAttribute(a) !== el.getAttribute(key)) el.setAttribute(a, el.getAttribute(key)); } });
   }
   const obs = new MutationObserver((recs) => {
-    if (lang !== 'es') return;
+    if (lang === 'en') return;
     for (const r of recs) {
       if (r.type === 'childList') r.addedNodes.forEach((n) => toEs(n));
       else if (r.type === 'characterData') { if (!origText.has(r.target) || tr(r.target.nodeValue.trim()) != null) { origText.delete(r.target); toEs(r.target); } }
@@ -1600,12 +1749,12 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     }
   });
   function setLang(l) {
-    lang = l === 'es' ? 'es' : 'en';
+    lang = l === 'es' || l === 'ht' ? l : 'en';
     document.documentElement.lang = lang;
-    document.title = lang === 'es' ? 'Tablero de técnicos Broward y Dade' : 'Broward & Dade Tech Scorecard';
+    document.title = lang === 'es' ? 'Tablero de técnicos Broward y Dade' : lang === 'ht' ? 'Tablo teknisyen Broward ak Dade' : 'Broward & Dade Tech Scorecard';
     try { localStorage.setItem('sc-lang', lang); } catch (e) {}
     document.querySelectorAll('[data-lang-choice]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.langChoice === lang)));
-    if (lang === 'es') toEs(document.body); else { toEn(document.body); if (window.__dashRunAll) window.__dashRunAll(); }
+    if (lang !== 'en') { toEn(document.body); toEs(document.body); } else { toEn(document.body); if (window.__dashRunAll) window.__dashRunAll(); }
   }
   document.addEventListener('DOMContentLoaded', () => {
     obs.observe(document.body, { childList: true, characterData: true, attributes: true, attributeFilter: ATTRS, subtree: true });
