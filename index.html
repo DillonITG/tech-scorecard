@@ -1204,6 +1204,12 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     const cap = (d, parts) => { const c = mk('div', 'cap'); parts.filter(Boolean).forEach((p) => c.appendChild(typeof p === 'string' ? mk('span', null, p) : p)); d.appendChild(c); };
     const from = r.away ? 'From ' + r.last_label : null;
     const range = (vals, floorTo) => { const ok = vals.filter((v) => v != null); return Math.max(0, Math.floor(Math.min(...ok) - floorTo)); };
+    /* Counts behind the FTR and tNPS tiles: FTR fails over the selected timeframe, detractors over the tNPS window. */
+    const counts = (() => { const tp = dash.data('tech_periods'); if (r.away || tp.status !== 'ok') return null;
+      const ps = [...new Set(tp.data.map((x) => x.period_start))].sort(), win = ps.slice(-K), win3 = ps.slice(-Math.max(K, 3));
+      const mine = (w) => tp.data.filter((x) => x.tech_id === r.tech_id && w.includes(x.period_start));
+      const sum = (rows, k) => rows.reduce((a, x) => a + (x[k] || 0), 0);
+      return { fails: sum(mine(win), 'ftr_fail'), ftrJobs: sum(mine(win), 'ftr_total'), det: sum(mine(win3), 'detractors') }; })();
 
     // Jobs
     { const d = tile(K > 1 ? 'Jobs, last ' + K + ' months' : 'Jobs this month', r.away ? '—' : d3.format(',')(r.jobs), { tag: r.away ? null : (r.jobs >= t.avg_jobs ? 'Above team avg' : 'Below team avg') });
@@ -1221,12 +1227,12 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     { const bad = r.ftr < SC.T.ftr;
       const d = tile('FTR', SC.pct(r.ftr), { bad, tag: bad ? 'Below target' : 'On target', tagCls: bad ? 'bad' : 'good' });
       bullet(d, r.ftr, { lo: range([r.ftr, t.ftr, SC.T.ftr], 12), hi: 100, team: t.ftr, target: SC.T.ftr, bad });
-      cap(d, ['▲ Team ' + SC.pct(t.ftr), 'Target ' + SC.tgt(SC.T.ftr), from]); el.appendChild(d); }
+      cap(d, ['▲ Team ' + SC.pct(t.ftr), 'Target ' + SC.tgt(SC.T.ftr), counts ? counts.fails + (counts.fails === 1 ? ' FTR fail' : ' FTR fails') + ' of ' + counts.ftrJobs + ' jobs' : null, from]); el.appendChild(d); }
     // tNPS 3 months
     { const bad = r.tnps_3mo != null && r.tnps_3mo < SC.T.tnps;
       const d = tile(tnpsMonths > 3 ? 'tNPS, last ' + tnpsMonths + ' months' : 'tNPS, last 3 months', SC.pct(r.tnps_3mo), { bad, tag: r.tnps_3mo_surveys + ' surveys' });
       bullet(d, r.tnps_3mo, { lo: range([r.tnps_3mo, t.tnps_3mo, SC.T.tnps], 15), hi: 100, team: t.tnps_3mo, target: SC.T.tnps, bad });
-      cap(d, ['▲ Team ' + SC.pct(t.tnps_3mo), 'Target ' + SC.tgt(SC.T.tnps)]); el.appendChild(d); }
+      cap(d, ['▲ Team ' + SC.pct(t.tnps_3mo), 'Target ' + SC.tgt(SC.T.tnps), counts ? counts.det + (counts.det === 1 ? ' detractor' : ' detractors') : null]); el.appendChild(d); }
     // Repeat rate (lower is better)
     { const gap = r.repeat != null && t.repeat != null ? r.repeat - t.repeat : 0, bad = gap > 1, good = gap < -1;
       const d = tile('Repeat rate', SC.pct(r.repeat), { bad, tag: bad ? 'Worse than team' : good ? 'Better than team' : 'In line with team', tagCls: bad ? 'bad' : good ? 'good' : '' });
@@ -1752,6 +1758,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   };
   const dateHT = (s) => s.replace(/\b([A-Z][a-z]{2}) (\d{1,2}), (\d{4})\b/g, (_, m, d, y) => `${d} ${moh(m)} ${y}`);
   const RULES_HT = [
+    [/^(\d+) FTR fails? of (\d+) jobs$/, (m) => `${m[1]} echèk FTR sou ${m[2]} travay`],
+    [/^(\d+) detractors?$/, (m) => `${m[1]} detraktè`],
     [/^.+$/, (m) => labelHT(m[0])],
     [/^([A-Z][a-z]{2}) MTD$/, (m) => `${moh(m[1])}*`],
     [/^([A-Z][a-z]{2}) (\d{1,2})(\*?)$/, (m) => MH[m[1]] ? `${m[2]} ${moh(m[1])}${m[3]}` : null],
@@ -1819,6 +1827,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     return null;
   };
   const RULES = [
+    [/^(\d+) FTR fails? of (\d+) jobs$/, (m) => `${m[1]} ${m[1] === '1' ? 'falla' : 'fallas'} FTR de ${m[2]} trabajos`],
+    [/^(\d+) detractors?$/, (m) => `${m[1]} ${m[1] === '1' ? 'detractor' : 'detractores'}`],
     [/^.+$/, (m) => label(m[0])],
     [/^([A-Z][a-z]{2}) MTD$/, (m) => `${mo(m[1])}*`],
     [/^([A-Z][a-z]{2}) (\d{1,2})(\*?)$/, (m) => M[m[1]] ? `${m[2]} ${mo(m[1])}${m[3]}` : null],
