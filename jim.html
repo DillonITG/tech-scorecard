@@ -238,7 +238,9 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   .sc-qc-pbtn:hover { border-color: var(--sc-c1); }
   .sc-qc-pbtn:focus-visible { outline: 2px solid var(--cds-chart-axis); outline-offset: 2px; }
   .sc-qc-pbtn svg { width: 14px; height: 14px; }
-  .sc-show { margin: var(--cds-gap-lg) auto 0; width: 100%; max-width: 520px; }
+  .sc-show-row { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: var(--cds-gap-lg); margin-top: var(--cds-gap-lg); }
+  .sc-show-row > div:empty { display: none; }
+  .sc-show { flex: 1 1 360px; width: 100%; max-width: 520px; min-width: 0; }
   .sc-show-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; }
   .sc-show-head h2 { margin: 0; }
   .sc-show-frame { position: relative; border-radius: var(--cds-radius); overflow: hidden; background: #0d0f13; aspect-ratio: 3 / 4; max-height: 78vh; width: 100%; touch-action: pan-y; }
@@ -247,6 +249,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   .sc-show-slide img { width: 100%; height: 100%; object-fit: contain; display: block; }
   .sc-show .nav { position: absolute; top: 50%; transform: translateY(-50%); width: 42px; height: 42px; border-radius: 50%; border: 0; background: rgba(0, 0, 0, .55); color: #fff; font-size: 26px; line-height: 1; cursor: pointer; display: grid; place-items: center; }
   .sc-show .nav.prev { left: 10px; } .sc-show .nav.next { right: 10px; }
+  .sc-show .badge { position: absolute; left: 10px; top: 10px; padding: 5px 12px; border-radius: 999px; background: rgba(0, 0, 0, .65); color: #fff; font-size: var(--cds-font-size-body); font-weight: 600; font-variant-numeric: tabular-nums; pointer-events: none; }
   .sc-show .nav:focus-visible, .sc-show-dots button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
   .sc-show-dots { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; }
   .sc-show-dots button { width: 9px; height: 9px; padding: 0; border-radius: 50%; border: 0; background: var(--cds-chart-grid); cursor: pointer; }
@@ -505,7 +508,10 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
         </table>
       </div>
     </div>
-    <div id="showcase" aria-label="QC showcase" data-draw="showcase" data-source="showcase"></div>
+    <div class="sc-show-row">
+      <div id="showcase" aria-label="QC showcase" data-draw="showcase" data-source="showcase"></div>
+      <div id="fieldqc" aria-label="Comcast Field QC's" data-draw="fieldqc" data-source="qc"></div>
+    </div>
   </section>
 
   <!-- TECHS -->
@@ -1636,41 +1642,54 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     dlg.addEventListener('close', () => { dlg.remove(); if (opener) opener.focus(); });
     dlg.append(bar, stage, cnt); document.body.appendChild(dlg); show(0); dlg.showModal(); x.focus();
   };
-  /* QC showcase: a carousel of photos that show good craftsmanship (no captions). */
-  dash.draw('showcase', (el) => {
-    const d = dash.data('showcase');
-    const photos = d.status === 'ok' ? d.data.map((r) => String(r.photo || '').trim()).filter(Boolean) : [];
+  /* Photo carousel shared by the QC showcase and the Comcast Field QC's box.
+     slides: [{ src, tech?, open() }]; a slide with a tech shows a "Tech ####" badge while it is on screen. */
+  const carousel = (el, title, note, slides) => {
     if (el.__showTimer) { clearInterval(el.__showTimer); el.__showTimer = null; }
-    el.className = photos.length ? 'sc-card sc-show' : ''; el.replaceChildren(); if (!photos.length) return;
+    el.className = slides.length ? 'sc-card sc-show' : ''; el.replaceChildren(); if (!slides.length) return;
     const mk = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
-    const head = mk('div', 'sc-show-head'); head.append(mk('h2', null, '⭐ QC showcase'), mk('span', 'sc-show-count'));
-    const note = mk('p', 'sc-note', 'Jobs from our techs that show good craftsmanship and the right standards.');
-    const frame = mk('div', 'sc-show-frame'), slides = mk('div', 'sc-show-slides'); frame.appendChild(slides);
-    photos.forEach((src, k) => {
-      const b = mk('button', 'sc-show-slide'); b.type = 'button'; b.setAttribute('aria-label', 'Open photo ' + (k + 1) + ' of ' + photos.length);
-      const img = mk('img'); img.alt = ''; img.decoding = 'async'; img.loading = k < 2 ? 'eager' : 'lazy'; img.src = src; b.appendChild(img);
-      b.onclick = () => qcGallery({ tech: null, photos: photos.slice(k).concat(photos.slice(0, k)), showcase: true }, b);
-      slides.appendChild(b);
+    const head = mk('div', 'sc-show-head'), count = mk('span', 'sc-show-count'); head.append(mk('h2', null, title), count);
+    const frame = mk('div', 'sc-show-frame'), track = mk('div', 'sc-show-slides'); frame.appendChild(track);
+    const badge = slides.some((s) => s.tech) ? mk('span', 'badge') : null;
+    slides.forEach((s, k) => {
+      const b = mk('button', 'sc-show-slide'); b.type = 'button'; b.setAttribute('aria-label', 'Open photo ' + (k + 1) + ' of ' + slides.length);
+      const img = mk('img'); img.alt = ''; img.decoding = 'async'; img.loading = k < 2 ? 'eager' : 'lazy'; img.src = s.src; b.appendChild(img);
+      b.onclick = () => s.open(b); track.appendChild(b);
     });
     const dots = mk('div', 'sc-show-dots'); let i = 0;
-    const go = (k) => { i = (k + photos.length) % photos.length; slides.style.transform = 'translateX(' + (-100 * i) + '%)';
+    const go = (k) => { i = (k + slides.length) % slides.length; track.style.transform = 'translateX(' + (-100 * i) + '%)';
       [...dots.children].forEach((b, j) => b.setAttribute('aria-current', String(j === i)));
-      head.lastChild.textContent = (i + 1) + ' / ' + photos.length; };
-    if (photos.length > 1) {
+      count.textContent = (i + 1) + ' / ' + slides.length;
+      if (badge) { badge.textContent = slides[i].tech ? 'Tech ' + slides[i].tech : ''; badge.hidden = !slides[i].tech; } };
+    let paused = false, until = 0; const hold = () => { until = Date.now() + 15000; };
+    if (slides.length > 1) {
       const pv = mk('button', 'nav prev', '‹'), nx = mk('button', 'nav next', '›'); pv.type = nx.type = 'button';
       pv.setAttribute('aria-label', 'Previous photo'); nx.setAttribute('aria-label', 'Next photo');
       pv.onclick = () => { go(i - 1); hold(); }; nx.onclick = () => { go(i + 1); hold(); }; frame.append(pv, nx);
-      photos.forEach((_, j) => { const b = mk('button'); b.type = 'button'; b.setAttribute('aria-label', 'Photo ' + (j + 1)); b.onclick = () => { go(j); hold(); }; dots.appendChild(b); });
+      slides.forEach((_, j) => { const b = mk('button'); b.type = 'button'; b.setAttribute('aria-label', 'Photo ' + (j + 1)); b.onclick = () => { go(j); hold(); }; dots.appendChild(b); });
       let sx = null; frame.addEventListener('pointerdown', (e) => { sx = e.clientX; });
       frame.addEventListener('pointerup', (e) => { if (sx == null) return; const dx = e.clientX - sx; sx = null; if (Math.abs(dx) > 40) { go(i + (dx < 0 ? 1 : -1)); hold(); } });
     }
+    if (badge) frame.appendChild(badge);
     /* Auto-advance every 6 s; pause while hovered or focused, and for 15 s after someone moves it. */
-    let paused = false, until = 0; const hold = () => { until = Date.now() + 15000; };
     frame.addEventListener('mouseenter', () => { paused = true; }); frame.addEventListener('mouseleave', () => { paused = false; });
     frame.addEventListener('focusin', () => { paused = true; }); frame.addEventListener('focusout', () => { paused = false; });
     const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (photos.length > 1 && !still) el.__showTimer = setInterval(() => { if (!paused && Date.now() > until && !document.hidden && el.offsetParent) go(i + 1); }, 6000);
-    el.append(head, note, frame); if (photos.length > 1) el.appendChild(dots); go(0);
+    if (slides.length > 1 && !still) el.__showTimer = setInterval(() => { if (!paused && Date.now() > until && !document.hidden && el.offsetParent) go(i + 1); }, 6000);
+    el.append(head, mk('p', 'sc-note', note), frame); if (slides.length > 1) el.appendChild(dots); go(0);
+  };
+  /* QC showcase: photos that show good craftsmanship (no captions). */
+  dash.draw('showcase', (el) => {
+    const d = dash.data('showcase');
+    const photos = d.status === 'ok' ? d.data.map((r) => String(r.photo || '').trim()).filter(Boolean) : [];
+    carousel(el, '⭐ QC showcase', 'Jobs from our techs that show good craftsmanship and the right standards.',
+      photos.map((src, k) => ({ src, open: (b) => qcGallery({ tech: null, photos: photos.slice(k).concat(photos.slice(0, k)), showcase: true }, b) })));
+  });
+  /* Comcast Field QC's: every photo from this team's QC tab, newest QC first, with the tech's number. */
+  dash.draw('fieldqc', (el) => {
+    const rows = qcRows() || [], slides = [];
+    for (const r of rows) r.photos.forEach((src, k) => slides.push({ src, tech: r.tech, open: (b) => qcGallery(Object.assign({}, r, { photos: r.photos.slice(k).concat(r.photos.slice(0, k)) }), b) }));
+    carousel(el, "Comcast Field QC's", 'Photos from Comcast field QCs on our techs in the last 30 days.', slides);
   });
   dash.draw('qctitle', (el) => { el.textContent = SC.qc.tech ? 'QCs for Tech ' + SC.qc.tech : 'All QCs'; });
   dash.draw('qclist', (el) => {
@@ -1797,7 +1816,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     'Job': 'Trabajo', 'Observer': 'Observador', 'Open QC': 'Abrir QC', 'No QCs by other observers in the last 30 days.': 'No hay QC de otros observadores en los últimos 30 días.',
     'No tech met all three targets with at least 40 jobs over the last 30 days.': 'Ningún técnico cumplió las tres metas con al menos 40 trabajos en los últimos 30 días.',
     'Lines mark where a new fiscal month starts. A week that crosses the 22nd goes with the month that has most of its days.': 'Las líneas marcan dónde empieza un nuevo mes fiscal. Una semana que cruza el día 22 va con el mes que tiene la mayoría de sus días.', 'tNPS, last 3 months': 'tNPS, últimos 3 meses', 'Timeframe': 'Período', 'Weeks are grouped under their fiscal month. A week that crosses the 22nd goes with the month that has most of its days.': 'Las semanas se agrupan bajo su mes fiscal. Una semana que cruza el día 22 va con el mes que tiene la mayoría de sus días.', 'Feedback': 'Comentarios', 'Surveys by tech': 'Encuestas por técnico', 'Number of surveys and tNPS for each tech. Select a tech to see only theirs.': 'Número de encuestas y tNPS de cada técnico. Selecciona un técnico para ver solo las suyas.', 'Newest first, as customers wrote them. Passives and detractors always show, with or without a comment.': 'Las más recientes primero, tal como las escribieron los clientes. Los pasivos y detractores siempre aparecen, con o sin comentario.', 'Surveys': 'Encuestas', 'Passives (7–8)': 'Pasivos (7–8)', 'Detractors (0–6)': 'Detractores (0–6)', 'No comment left': 'Sin comentario', 'Hide promoter surveys with no comment': 'Ocultar encuestas de promotores sin comentario', 'All surveys': 'Todas las encuestas', 'No surveys yet.': 'Aún no hay encuestas.', 'Customer feedback': 'Comentarios de clientes', 'Comments by tech': 'Comentarios por técnico', 'Select a tech to see only their comments.': 'Selecciona un técnico para ver solo sus comentarios.', 'What customers mention': 'Lo que mencionan los clientes', 'How many comments bring up each theme. Select one to filter; matching words are highlighted.': 'Cuántos comentarios mencionan cada tema. Selecciona uno para filtrar; las palabras que coinciden se resaltan.', 'All comments': 'Todos los comentarios', 'Newest first, as customers wrote them.': 'Los más recientes primero, tal como los escribieron los clientes.', 'Comments': 'Comentarios', 'Average score': 'Puntuación promedio', 'Out of 10': 'De 10', 'Promoters (9–10)': 'Promotores (9–10)', 'Passives and detractors (0–8)': 'Pasivos y detractores (0–8)', 'All': 'Todos', 'Promoters': 'Promotores', 'Passives': 'Pasivos', 'Detractors': 'Detractores', 'No comments match.': 'Ningún comentario coincide.', 'No survey comments yet.': 'Aún no hay comentarios de encuestas.', 'Knowledgeable': 'Conocedor', 'Professional': 'Profesional', 'Friendly and pleasant': 'Amable y agradable', 'Helpful': 'Servicial', 'Quick and on time': 'Rápido y puntual', 'Explained things': 'Explicó todo', 'Fixed the problem': 'Resolvió el problema', 'Score': 'Puntuación', 'Slide left to look further back.': 'Desliza a la izquierda para ver más atrás.', '1 month': '1 mes',
-    'Color theme': 'Tema de color', '⭐ QC showcase': '⭐ Vitrina de QC', 'Jobs from our techs that show good craftsmanship and the right standards.': 'Trabajos de nuestros técnicos que muestran buena mano de obra y los estándares correctos.', '🏁 Race for first place': '🏁 Carrera por el primer lugar', 'Last 3 fiscal months ·': 'Últimos 3 meses fiscales ·', 'Not enough techs qualify yet.': 'Todavía no hay suficientes técnicos que califiquen.', 'Race score: 60% FTR, 30% tNPS and 10% tool usage over the last 3 fiscal months. A tech needs at least 40 jobs and 5 surveys to race. It moves with every scorecard update.': 'Puntaje de la carrera: 60% FTR, 30% tNPS y 10% uso de herramienta en los últimos 3 meses fiscales. Un técnico necesita al menos 40 trabajos y 5 encuestas para competir. Se mueve con cada actualización del tablero.', 'BP-Ontrac Team Metrics for Jim’s team, pulled one fiscal month at a time and one week at a time.': 'Métricas de equipo de BP-Ontrac para el equipo de Jim, descargadas por mes fiscal y por semana.', 'Language': 'Idioma', 'Scorecard pages': 'Páginas del tablero', 'no data': 'sin datos'
+    'Color theme': 'Tema de color', '⭐ QC showcase': '⭐ Vitrina de QC', "Comcast Field QC's": 'QC de campo de Comcast', 'Photos from Comcast field QCs on our techs in the last 30 days.': 'Fotos de los QC de campo de Comcast a nuestros técnicos en los últimos 30 días.', 'Jobs from our techs that show good craftsmanship and the right standards.': 'Trabajos de nuestros técnicos que muestran buena mano de obra y los estándares correctos.', '🏁 Race for first place': '🏁 Carrera por el primer lugar', 'Last 3 fiscal months ·': 'Últimos 3 meses fiscales ·', 'Not enough techs qualify yet.': 'Todavía no hay suficientes técnicos que califiquen.', 'Race score: 60% FTR, 30% tNPS and 10% tool usage over the last 3 fiscal months. A tech needs at least 40 jobs and 5 surveys to race. It moves with every scorecard update.': 'Puntaje de la carrera: 60% FTR, 30% tNPS y 10% uso de herramienta en los últimos 3 meses fiscales. Un técnico necesita al menos 40 trabajos y 5 encuestas para competir. Se mueve con cada actualización del tablero.', 'BP-Ontrac Team Metrics for Jim’s team, pulled one fiscal month at a time and one week at a time.': 'Métricas de equipo de BP-Ontrac para el equipo de Jim, descargadas por mes fiscal y por semana.', 'Language': 'Idioma', 'Scorecard pages': 'Páginas del tablero', 'no data': 'sin datos'
   };
   const MH = { Jan: 'jan', Feb: 'fev', Mar: 'mas', Apr: 'avr', May: 'me', Jun: 'jen', Jul: 'jiy', Aug: 'out', Sep: 'sep', Oct: 'okt', Nov: 'nov', Dec: 'des' };
   const moh = (m) => MH[m] || m;
@@ -1892,7 +1911,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     'Newest first. Select Photos to see the pictures from each QC. Photos that show a house number or other customer details are left out.': 'Sa ki pi resan yo an premye. Chwazi Foto pou wè foto chak QC. Foto ki montre nimewo kay la oswa lòt enfòmasyon kliyan an pa ladan yo.', 'Photos': 'Foto', 'Close': 'Fèmen', 'Previous photo': 'Foto anvan', 'Next photo': 'Pwochen foto',
     'QCs': 'QC', 'Techs with a QC': 'Teknisyen ki gen QC', 'Out of 100': 'Sou 100', 'TQI alerts': 'Alèt TQI', 'Completed': 'Fini',
     'Job': 'Travay', 'Observer': 'Obsèvatè', 'Open QC': 'Louvri QC', 'No QCs by other observers in the last 30 days.': 'Pa gen QC lòt obsèvatè nan 30 dènye jou yo.',
-    'Color theme': 'Koulè', '⭐ QC showcase': '⭐ Vitrin QC', 'Jobs from our techs that show good craftsmanship and the right standards.': 'Travay teknisyen nou yo ki montre bon kalite travay ak bon estanda yo.', '🏁 Race for first place': '🏁 Kous pou premye plas', 'Last 3 fiscal months ·': '3 dènye mwa fiskal ·', 'Not enough techs qualify yet.': 'Poko gen ase teknisyen ki kalifye.', 'Race score: 60% FTR, 30% tNPS and 10% tool usage over the last 3 fiscal months. A tech needs at least 40 jobs and 5 surveys to race. It moves with every scorecard update.': 'Pwen kous la: 60% FTR, 30% tNPS ak 10% itilizasyon zouti sou 3 dènye mwa fiskal yo. Yon teknisyen bezwen omwen 40 travay ak 5 sondaj pou l patisipe. Li chanje chak fwa tablo a mete ajou.', 'BP-Ontrac Team Metrics for Jim’s team, pulled one fiscal month at a time and one week at a time.': 'Mezi ekip BP-Ontrac pou ekip Jim, rale youn mwa fiskal alafwa ak youn semèn alafwa.', 'Language': 'Lang', 'Scorecard pages': 'Paj tablo a', 'no data': 'pa gen done'
+    'Color theme': 'Koulè', '⭐ QC showcase': '⭐ Vitrin QC', "Comcast Field QC's": 'QC sou teren Comcast', 'Photos from Comcast field QCs on our techs in the last 30 days.': 'Foto QC sou teren Comcast yo sou teknisyen nou yo nan 30 dènye jou yo.', 'Jobs from our techs that show good craftsmanship and the right standards.': 'Travay teknisyen nou yo ki montre bon kalite travay ak bon estanda yo.', '🏁 Race for first place': '🏁 Kous pou premye plas', 'Last 3 fiscal months ·': '3 dènye mwa fiskal ·', 'Not enough techs qualify yet.': 'Poko gen ase teknisyen ki kalifye.', 'Race score: 60% FTR, 30% tNPS and 10% tool usage over the last 3 fiscal months. A tech needs at least 40 jobs and 5 surveys to race. It moves with every scorecard update.': 'Pwen kous la: 60% FTR, 30% tNPS ak 10% itilizasyon zouti sou 3 dènye mwa fiskal yo. Yon teknisyen bezwen omwen 40 travay ak 5 sondaj pou l patisipe. Li chanje chak fwa tablo a mete ajou.', 'BP-Ontrac Team Metrics for Jim’s team, pulled one fiscal month at a time and one week at a time.': 'Mezi ekip BP-Ontrac pou ekip Jim, rale youn mwa fiskal alafwa ak youn semèn alafwa.', 'Language': 'Lang', 'Scorecard pages': 'Paj tablo a', 'no data': 'pa gen done'
   };
   const labelHT = (s) => {
     let m;
