@@ -473,7 +473,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   </header>
 
   <!-- OVERVIEW -->
-  <section class="sc-page" id="overview" data-page="overview">
+  <section class="sc-page" id="page-overview" data-page="overview">
     <div class="sc-grid">
       <article class="sc-card">
         <h2>Tool usage</h2>
@@ -576,7 +576,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   </section>
 
   <!-- TECHS -->
-  <section class="sc-page" id="techs" data-page="techs" hidden>
+  <section class="sc-page" id="page-techs" data-page="techs" hidden>
     <div class="sc-card">
       <div class="sc-sec-head">
         <div>
@@ -643,7 +643,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   </section>
 
   <!-- WEEKLY -->
-  <section class="sc-page" id="weekly" data-page="weekly" hidden>
+  <section class="sc-page" id="page-weekly" data-page="weekly" hidden>
     <div>
       <h2 class="sc-h2">Week by week</h2>
       <p class="sc-note">Monday-to-Sunday weeks, so a slide shows up before the fiscal month closes. The last week is partial.</p>
@@ -671,7 +671,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   </section>
 
   <!-- FEEDBACK -->
-  <section class="sc-page" id="feedback" data-page="feedback" hidden>
+  <section class="sc-page" id="page-feedback" data-page="feedback" hidden>
     <div>
       <h2 class="sc-h2">Customer feedback</h2>
       <p class="sc-note" data-draw="fbnote" data-source="feedback">—</p>
@@ -703,7 +703,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   </section>
 
   <!-- QC -->
-  <section class="sc-page" id="qc" data-page="qc" hidden>
+  <section class="sc-page" id="page-qc" data-page="qc" hidden>
     <div>
       <h2 class="sc-h2">QC observations by other observers</h2>
       <p class="sc-note" data-draw="qcnote" data-source="qc">—</p>
@@ -728,7 +728,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   </section>
 
   <!-- MARKET LEADERS -->
-  <section class="sc-page" id="market" data-page="market" hidden>
+  <section class="sc-page" id="page-market" data-page="market" hidden>
     <div class="sc-mk-bar">
       <div class="sc-pills" role="group" aria-label="Market">
         <button type="button" data-market="Broward" aria-pressed="true">Broward</button>
@@ -1199,6 +1199,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   }
   const named = (location.hash || '').slice(1);
   if (['overview', 'techs', 'weekly', 'feedback', 'qc', 'market'].includes(named)) showPage(named);
+  if (named) { try { history.scrollRestoration = 'manual'; } catch (e) {} window.scrollTo(0, 0); }
 
   /* Header and team cards */
   const latest = () => { const d = dash.data('team_latest'); return d.status === 'ok' && d.data[0] ? d.data[0] : null; };
