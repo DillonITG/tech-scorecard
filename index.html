@@ -427,7 +427,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
         <button class="sc-tab" role="tab" type="button" id="tab-market" data-page="market" aria-selected="false">Market leaders</button>
       </div>
     </div>
-    <button class="sc-spot-bar" id="spot-bar" type="button" hidden aria-expanded="false" aria-controls="spotlight">
+    <button class="sc-spot-bar" id="spot-bar" type="button" aria-expanded="true" aria-controls="spotlight">
       <span class="it"><span aria-hidden="true">🏆</span><span class="k">Top tech</span><b data-draw="spotchamp" data-source="top_tech">—</b></span>
       <span class="it"><span aria-hidden="true">🏁</span><span class="k">Race leader</span><b data-draw="spotlead" data-source="race">—</b><span class="pts" data-draw="spotpts" data-source="race"></span></span>
       <span class="more"><span class="lbl-show">Show</span><span class="lbl-hide">Hide</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span>
@@ -1106,7 +1106,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     for (const b of document.querySelectorAll('.sc-tab')) b.setAttribute('aria-selected', String(b.dataset.page === name));
     /* The top tech banner and the race are full size on Overview only; other pages get a slim bar that can open them. */
     const bar = document.getElementById('spot-bar'), spot = document.getElementById('spotlight');
-    if (bar && spot) { const ov = name === 'overview'; bar.hidden = ov; spot.hidden = !ov; bar.setAttribute('aria-expanded', String(ov)); }
+    if (bar && spot) { const ov = name === 'overview'; bar.hidden = false; spot.hidden = !ov; bar.setAttribute('aria-expanded', String(ov)); }
   };
   { const bar = document.getElementById('spot-bar');
     if (bar) bar.addEventListener('click', () => { const spot = document.getElementById('spotlight'); const open = spot.hidden; spot.hidden = !open; bar.setAttribute('aria-expanded', String(open)); }); }
