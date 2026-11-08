@@ -1186,9 +1186,9 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     SC.page = name;
     for (const s of document.querySelectorAll('.sc-page')) s.hidden = s.dataset.page !== name;
     for (const b of document.querySelectorAll('.sc-tab')) b.setAttribute('aria-selected', String(b.dataset.page === name));
-    /* The top tech banner and the race are full size on Overview only; other pages get a slim bar that can open them. */
+    /* The top tech banner, the race and their slim bar show on Overview only (Dillon, Nov 8). */
     const bar = document.getElementById('spot-bar'), spot = document.getElementById('spotlight');
-    if (bar && spot) { const ov = name === 'overview'; bar.hidden = false; spot.hidden = !ov; bar.setAttribute('aria-expanded', String(ov)); }
+    if (bar && spot) { const ov = name === 'overview'; bar.hidden = !ov; spot.hidden = !ov; bar.setAttribute('aria-expanded', String(ov)); }
   };
   { const bar = document.getElementById('spot-bar');
     if (bar) bar.addEventListener('click', () => { const spot = document.getElementById('spotlight'); const open = spot.hidden; spot.hidden = !open; bar.setAttribute('aria-expanded', String(open)); }); }
