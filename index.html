@@ -125,9 +125,14 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   .sc-title { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; text-wrap: balance; }
   .sc-take { margin: 0; color: var(--color-fg-muted); font-size: var(--cds-font-size-body); max-width: 72ch; }
   .sc .sc-take b { color: var(--color-fg); font-weight: 600; }
-  .sc-tabs { display: flex; gap: var(--cds-gap-xs); flex-wrap: wrap; border-bottom: 1px solid var(--color-border-line); }
-  .sc-tab { font: inherit; font-size: var(--cds-font-size-body); background: none; border: 0; border-bottom: 2px solid transparent; color: var(--color-fg-muted); padding: var(--cds-pad-xs) var(--cds-pad-sm); cursor: pointer; margin-bottom: -1px; }
-  .sc-tab[aria-selected="true"] { color: var(--color-fg); border-bottom-color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
+  .sc-head-top { display: flex; align-items: center; justify-content: space-between; gap: var(--cds-gap-md, 1rem) var(--cds-gap-xl, 2rem); flex-wrap: wrap; }
+  .sc-head-text { display: grid; gap: var(--cds-gap-sm); flex: 1 1 22rem; min-width: 0; }
+  .sc-tabs { display: inline-flex; gap: 4px; flex-wrap: wrap; padding: 5px; border: 1px solid var(--color-border-line); border-radius: 14px; background: var(--color-panel); box-shadow: 0 2px 10px rgb(0 0 0 / .18); flex: 0 0 auto; }
+  .sc-tab { font: inherit; font-size: 16px; font-weight: 600; letter-spacing: .01em; background: none; border: 0; border-radius: 10px; color: var(--color-fg-muted); padding: 10px 20px; cursor: pointer; transition: background .15s, color .15s; }
+  .sc-tab:hover { color: var(--color-fg); background: color-mix(in srgb, var(--color-fg) 8%, transparent); }
+  .sc-tab[aria-selected="true"] { background: var(--color-fg); color: var(--color-bg); }
+  @media (max-width: 44rem) { .sc-tabs { display: flex; width: 100%; } .sc-tab { flex: 1 1 auto; padding: 9px 8px; font-size: 14px; } }
+  @media (prefers-reduced-motion: reduce) { .sc-tab { transition: none; } }
   .sc-tab:focus-visible { outline: 2px solid var(--cds-chart-axis); outline-offset: 2px; }
   .sc-page { display: grid; gap: var(--cds-gap-lg); }
   .sc-page[hidden], .sc [hidden] { display: none; }
@@ -374,8 +379,19 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
 
 <div class="sc">
   <header class="sc-head">
-    <h1 class="sc-title" id="top">Broward &amp; Dade tech scorecard</h1>
-    <p class="sc-take"><b data-draw="takeok" data-source="team_latest" data-field="techs_all_met" data-row="0">—</b> of <b data-draw="taken" data-source="team_latest" data-field="techs" data-row="0">—</b> techs are meeting all three targets in <b data-draw="takeperiod" data-source="team_latest" data-field="period_label" data-row="0">—</b>. FTR is where the team most often falls short. Fiscal months run from the 22nd to the 21st, and the latest one is still in progress.</p>
+    <div class="sc-head-top">
+      <div class="sc-head-text">
+        <h1 class="sc-title" id="top">Broward &amp; Dade tech scorecard</h1>
+        <p class="sc-take"><b data-draw="takeok" data-source="team_latest" data-field="techs_all_met" data-row="0">—</b> of <b data-draw="taken" data-source="team_latest" data-field="techs" data-row="0">—</b> techs are meeting all three targets in <b data-draw="takeperiod" data-source="team_latest" data-field="period_label" data-row="0">—</b>. FTR is where the team most often falls short. Fiscal months run from the 22nd to the 21st, and the latest one is still in progress.</p>
+      </div>
+      <div class="sc-tabs" role="tablist" aria-label="Scorecard pages">
+        <button class="sc-tab" role="tab" type="button" id="tab-overview" data-page="overview" aria-selected="true">Overview</button>
+        <button class="sc-tab" role="tab" type="button" id="tab-techs" data-page="techs" aria-selected="false">Techs</button>
+        <button class="sc-tab" role="tab" type="button" id="tab-weekly" data-page="weekly" aria-selected="false">Weekly</button>
+        <button class="sc-tab" role="tab" type="button" id="tab-feedback" data-page="feedback" aria-selected="false">Feedback</button>
+        <button class="sc-tab" role="tab" type="button" id="tab-qc" data-page="qc" aria-selected="false">QC</button>
+      </div>
+    </div>
     <section class="sc-champ" id="top-tech" aria-label="Top tech of the last 30 days">
       <svg class="sc-confetti" viewBox="0 0 300 160" preserveAspectRatio="xMaxYMin slice" aria-hidden="true">
         <g fill="#e8b931"><rect x="40" y="18" width="8" height="4" rx="1" transform="rotate(25 44 20)"/><rect x="250" y="120" width="8" height="4" rx="1" transform="rotate(-30 254 122)"/><circle cx="210" cy="30" r="3"/><circle cx="120" cy="140" r="2.5"/></g>
@@ -402,13 +418,6 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       <div class="sc-race-lanes" data-draw="racelanes" data-source="race"></div>
       <p class="sc-race-foot">Race score: 60% FTR, 30% tNPS and 10% tool usage over the last 3 fiscal months. A tech needs at least 40 jobs and 5 surveys to race. It moves with every scorecard update.</p>
     </section>
-    <div class="sc-tabs" role="tablist" aria-label="Scorecard pages">
-      <button class="sc-tab" role="tab" type="button" id="tab-overview" data-page="overview" aria-selected="true">Overview</button>
-      <button class="sc-tab" role="tab" type="button" id="tab-techs" data-page="techs" aria-selected="false">Techs</button>
-      <button class="sc-tab" role="tab" type="button" id="tab-weekly" data-page="weekly" aria-selected="false">Weekly</button>
-      <button class="sc-tab" role="tab" type="button" id="tab-feedback" data-page="feedback" aria-selected="false">Feedback</button>
-      <button class="sc-tab" role="tab" type="button" id="tab-qc" data-page="qc" aria-selected="false">QC</button>
-    </div>
   </header>
 
   <!-- OVERVIEW -->
