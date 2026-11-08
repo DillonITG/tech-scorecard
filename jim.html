@@ -538,6 +538,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
               <th data-field="tnps" data-col="tnps"><button type="button">tNPS</button></th>
               <th data-field="tnps_3mo" data-col="tnps_3mo" class="hide-sm"><button type="button">tNPS 3 mo</button></th>
               <th data-field="tnps_fails" data-col="tnps_fails" class="hide-sm"><button type="button">tNPS fails</button></th>
+              <th data-field="tnps_needed" data-col="tnps_needed" class="hide-sm"><button type="button">Promoters to target</button></th>
               <th data-field="ftr" data-col="ftr"><button type="button">FTR</button></th>
               <th data-field="ftr_fails" data-col="ftr_fails" class="hide-sm"><button type="button">FTR fails</button></th>
               <th data-field="ftr_needed" data-col="ftr_needed" class="hide-sm"><button type="button">Fixes to target</button></th>
@@ -564,6 +565,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       <div class="sc-span" data-draw="span" data-span="span" data-source="tech_periods"></div>
       <div class="sc-facts" data-draw="facts" data-source="tech_table team_now tech_periods"></div>
       <p class="sc-needs" data-draw="needs" data-source="tech_table">—</p>
+      <p class="sc-needs" data-draw="needsnps" data-source="tech_table"></p>
       <div class="sc-legend"><span><i data-draw="swatch" data-which="tech"></i>Selected tech</span><span><i data-draw="swatch" data-which="team"></i>Team</span><span><i class="dash"></i>Target</span><span><i class="mark"></i>Coaching note</span></div>
       <div class="sc-detail-grid">
         <div><h4>FTR</h4><div class="sc-chart sm" data-draw="detail" data-kpi="ftr" data-source="tech_periods team_by_period coaching"></div></div>
@@ -674,6 +676,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       <dt>tNPS 3 mo</dt><dd>Promoters minus detractors over all surveys in the last three fiscal months, which steadies small monthly samples. A tech’s monthly tNPS counts as a miss only with at least 5 surveys that month.</dd>
       <dt>tNPS fails</dt><dd>Detractor surveys (scores of 0 to 6) the tech got this fiscal month.</dd>
       <dt>FTR fails</dt><dd>Jobs this fiscal month that did not count as a first-time fix.</dd>
+      <dt>Promoters to target</dt><dd>How many promoter surveys (scores of 9 or 10) in a row the tech needs, with no detractors, to bring this month’s tNPS up to target. Passives (7 or 8) don’t subtract, but they still count as surveys, so they pull tNPS down.</dd>
       <dt>Fixes to target</dt><dd>How many first-time fixes in a row the tech needs, with no repeats, to bring this month’s FTR up to target.</dd>
       <dt>Repeat rate</dt><dd>Repeat visits as a share of trouble calls.</dd>
       <dt>Rework rate</dt><dd>Rework as a share of installs and trouble calls.</dd>
@@ -775,7 +778,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
           mix: 'Installs ' + share(r.installs, mixTotal) + '%, trouble calls ' + share(r.tcs, mixTotal) + '%, SROs ' + share(r.sros, mixTotal) + '%',
           tu: r.tu, tnps: r.tnps, tnps_surveys: r.tnps_surveys, low_sample: false,
           tnps_3mo: s3 > 0 ? Math.round(1000 * nps3 / s3) / 10 : null, tnps_3mo_surveys: s3,
-          ftr: r.ftr, ftr_jobs: r.ftr_total, ftr_needed: 0, tnps_fails: null, ftr_fails: null, repeat: r.repeat, rework: r.rework, pht: r.pht, met: r.met,
+          ftr: r.ftr, ftr_jobs: r.ftr_total, ftr_needed: 0, tnps_needed: 0, tnps_fails: null, ftr_fails: null, repeat: r.repeat, rework: r.rework, pht: r.pht, met: r.met,
           tu_miss: false, tnps_miss: false, ftr_miss: false, ftr_change: null,
           ftr_hist: ps.map((q) => { const x = find(id, q); return x ? x.ftr : ''; }).join(',')
         };
@@ -787,6 +790,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
         const s3 = three.reduce((a, x) => a + x.tnps_surveys, 0), nps3 = three.reduce((a, x) => a + x.promoters - x.detractors, 0);
         const pass = r.ftr_total - r.ftr_fail, t = T.ftr / 100;
         const need = r.ftr_total > 0 && pass / r.ftr_total < t ? Math.ceil((t * r.ftr_total - pass) / (1 - t)) : 0;
+        const npsGap = T.tnps * r.tnps_surveys - 100 * (r.promoters - r.detractors);
+        const tnpsNeed = r.tnps_surveys > 0 && npsGap > 0 ? Math.ceil(npsGap / (100 - T.tnps)) : 0;
         const mixTotal = r.installs + r.tcs + r.sros;
         return {
           tech_id: r.tech_id,
@@ -797,6 +802,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
           tu: r.tu, tnps: r.tnps, tnps_surveys: r.tnps_surveys, low_sample: r.tnps_surveys < 5,
           tnps_3mo: s3 > 0 ? Math.round(1000 * nps3 / s3) / 10 : null, tnps_3mo_surveys: s3,
           ftr: r.ftr, ftr_jobs: r.ftr_total, ftr_needed: need, tnps_fails: r.detractors, ftr_fails: r.ftr_fail,
+          tnps_needed: r.tnps_surveys > 0 ? tnpsNeed : null, promoters: r.promoters, detractors: r.detractors,
           repeat: r.repeat, rework: r.rework, pht: r.pht, met: r.met,
           tu_miss: r.tu_miss, tnps_miss: r.tnps_miss, ftr_miss: r.ftr_miss,
           ftr_change: p ? Math.round((r.ftr - p.ftr) * 10) / 10 : null,
@@ -1089,7 +1095,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     const li = vals.length - 1;
     if (vals[li] != null) svg.append('circle').attr('cx', x(li)).attr('cy', y(vals[li])).attr('r', 2.5).attr('fill', vals[li] < SC.T.ftr ? 'var(--cds-chart-status-critical)' : dash.colors[0]);
   };
-  const pickTech = (id) => { SC.picked = id; dash.draw('techrows'); dash.draw('techpick'); dash.draw('detail'); dash.draw('facts'); dash.draw('needs'); dash.draw('notes'); window.SC.notesEmpty(); };
+  const pickTech = (id) => { SC.picked = id; dash.draw('techrows'); dash.draw('techpick'); dash.draw('detail'); dash.draw('facts'); dash.draw('needs'); dash.draw('needsnps'); dash.draw('notes'); window.SC.notesEmpty(); };
   const defaultPick = (rows) => rows.filter((r) => !r.away).sort((a, b) => b.misses - a.misses || a.ftr - b.ftr)[0]?.tech_id || null;
 
   /* The tech table over the last K fiscal months: each tech's counts added up, rates and target misses worked out from the totals. */
@@ -1102,7 +1108,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       const tu_miss = c.tu != null && c.tu < SC.T.tu, tnps_miss = c.tnps_surveys >= 5 && c.tnps != null && c.tnps < SC.T.tnps, ftr_miss = c.ftr != null && c.ftr < SC.T.ftr;
       const misses = [tu_miss, tnps_miss, ftr_miss].filter(Boolean).length;
       return Object.assign({}, row, c, { away: false, misses, status: misses === 0 ? 'On target' : misses + ' below target', tu_miss, tnps_miss, ftr_miss,
-        low_sample: c.tnps_surveys < 5, ftr_needed: null, tnps_fails: null, ftr_fails: null,
+        low_sample: c.tnps_surveys < 5, ftr_needed: null, tnps_needed: null, tnps_fails: null, ftr_fails: null,
         mix: 'Installs ' + c.install_share + '%, trouble calls ' + c.tc_share + '%, SROs ' + c.sro_share + '%' });
     });
   };
@@ -1136,6 +1142,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       if (r.low_sample) { const s = document.createElement('span'); s.className = 'sc-low'; s.textContent = 'low'; s.title = r.tnps_surveys + ' surveys'; tn.appendChild(s); }
       td(SC.pct(r.tnps_3mo), 'hide-sm' + (r.tnps_3mo != null && r.tnps_3mo < SC.T.tnps ? ' miss' : ''));
       { const c = td(r.tnps_fails == null ? '—' : String(r.tnps_fails), 'hide-sm' + (r.tnps_fails > 0 ? ' miss' : '')); if (r.tnps_fails == null && !r.away) c.title = 'Shown for the current month only'; }
+      { const c = td(r.tnps_needed > 0 ? String(r.tnps_needed) : '—', 'hide-sm' + (r.tnps_needed > 0 ? ' miss' : '')); if (r.tnps_needed == null && !r.away) c.title = r.tnps_surveys === 0 ? 'No surveys yet this month' : 'Shown for the current month only'; }
       td(SC.pct(r.ftr), r.ftr_miss ? 'miss' : '');
       { const c = td(r.ftr_fails == null ? '—' : String(r.ftr_fails), 'hide-sm' + (r.ftr_fails > 0 ? ' miss' : '')); if (r.ftr_fails == null && !r.away) c.title = 'Shown for the current month only'; }
       { const c = td(r.ftr_needed > 0 ? String(r.ftr_needed) : '—', 'hide-sm' + (r.ftr_needed > 0 ? ' miss' : '')); if (r.ftr_needed == null) c.title = 'Shown for the current month only'; }
@@ -1259,7 +1266,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       const ps = [...new Set(tp.data.map((x) => x.period_start))].sort(), win = ps.slice(-K), win3 = ps.slice(-Math.max(K, 3));
       const mine = (w) => tp.data.filter((x) => x.tech_id === r.tech_id && w.includes(x.period_start));
       const sum = (rows, k) => rows.reduce((a, x) => a + (x[k] || 0), 0);
-      return { fails: sum(mine(win), 'ftr_fail'), ftrJobs: sum(mine(win), 'ftr_total'), det: sum(mine(win3), 'detractors') }; })();
+      const w3 = mine(win3);
+      return { fails: sum(mine(win), 'ftr_fail'), ftrJobs: sum(mine(win), 'ftr_total'), det: sum(w3, 'detractors'), pas: sum(w3, 'tnps_surveys') - sum(w3, 'promoters') - sum(w3, 'detractors') }; })();
 
     // Jobs
     { const d = tile(K > 1 ? 'Jobs, last ' + K + ' months' : 'Jobs this month', r.away ? '—' : d3.format(',')(r.jobs), { tag: r.away ? null : (r.jobs >= t.avg_jobs ? 'Above team avg' : 'Below team avg') });
@@ -1282,7 +1290,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     { const bad = r.tnps_3mo != null && r.tnps_3mo < SC.T.tnps;
       const d = tile(tnpsMonths > 3 ? 'tNPS, last ' + tnpsMonths + ' months' : 'tNPS, last 3 months', SC.pct(r.tnps_3mo), { bad, tag: r.tnps_3mo_surveys + ' surveys' });
       bullet(d, r.tnps_3mo, { lo: range([r.tnps_3mo, t.tnps_3mo, SC.T.tnps], 15), hi: 100, team: t.tnps_3mo, target: SC.T.tnps, bad });
-      cap(d, ['▲ Team ' + SC.pct(t.tnps_3mo), 'Target ' + SC.tgt(SC.T.tnps), counts ? counts.det + (counts.det === 1 ? ' detractor' : ' detractors') : null]); el.appendChild(d); }
+      cap(d, ['▲ Team ' + SC.pct(t.tnps_3mo), 'Target ' + SC.tgt(SC.T.tnps), counts ? counts.det + (counts.det === 1 ? ' detractor' : ' detractors') + ' · ' + counts.pas + (counts.pas === 1 ? ' passive' : ' passives') : null]); el.appendChild(d); }
     // Repeat rate (lower is better)
     { const gap = r.repeat != null && t.repeat != null ? r.repeat - t.repeat : 0, bad = gap > 1, good = gap < -1;
       const d = tile('Repeat rate', SC.pct(r.repeat), { bad, tag: bad ? 'Worse than team' : good ? 'Better than team' : 'In line with team', tagCls: bad ? 'bad' : good ? 'good' : '' });
@@ -1300,6 +1308,13 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     el.textContent = r.ftr_needed > 0
       ? `Tech ${r.tech_id} is at ${SC.pct(r.ftr)} FTR on ${r.ftr_jobs} jobs. They need ${r.ftr_needed} first-time fixes in a row, with no repeats, to reach ${SC.tgt(SC.T.ftr)} this month.`
       : `Tech ${r.tech_id} is at ${SC.pct(r.ftr)} FTR on ${r.ftr_jobs} jobs, which meets the ${SC.tgt(SC.T.ftr)} target.`;
+  });
+  dash.draw('needsnps', (el) => {
+    const r = pickedRow(); if (!r || r.away) { el.textContent = ''; return; }
+    const T = SC.T.tnps, pas = (r.tnps_surveys || 0) - (r.promoters || 0) - (r.detractors || 0);
+    el.textContent = !r.tnps_surveys ? `Tech ${r.tech_id} has no tNPS surveys yet this month.`
+      : r.tnps_needed > 0 ? `Tech ${r.tech_id} is at ${SC.pct(r.tnps)} tNPS on ${r.tnps_surveys} surveys this month (${r.detractors} ${r.detractors === 1 ? 'detractor' : 'detractors'}, ${pas} ${pas === 1 ? 'passive' : 'passives'}). They need ${r.tnps_needed} promoter surveys (9–10) in a row, with no detractors, to reach ${SC.tgt(T)}.`
+      : `Tech ${r.tech_id} is at ${SC.pct(r.tnps)} tNPS on ${r.tnps_surveys} surveys this month, which meets the ${SC.tgt(T)} target.`;
   });
   dash.draw('swatch', (el) => { el.style.background = el.dataset.which === 'tech' ? dash.colors[0] : 'var(--cds-chart-muted)'; });
   const notesFor = (id) => { const c = dash.data('coaching'); return c.status === 'ok' ? c.data.filter((n) => n.tech_id === id).sort((a, b) => a.date < b.date ? 1 : -1) : []; };
@@ -1775,7 +1790,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     'tNPS fails': 'Fallas tNPS', 'FTR fails': 'Fallas FTR',
     'Detractor surveys (scores of 0 to 6) the tech got this fiscal month.': 'Encuestas detractoras (puntaje de 0 a 6) que recibió el técnico este mes fiscal.',
     'Jobs this fiscal month that did not count as a first-time fix.': 'Trabajos de este mes fiscal que no contaron como reparación a la primera.',
-    'Fixes to target': 'Para llegar a la meta', 'Repeat': 'Repetición', 'Rework': 'Retrabajo', 'PHT pass': 'PHT aprobado',
+    'Fixes to target': 'Para llegar a la meta', 'Promoters to target': 'Promotores para la meta', 'How many promoter surveys (scores of 9 or 10) in a row the tech needs, with no detractors, to bring this month’s tNPS up to target. Passives (7 or 8) don’t subtract, but they still count as surveys, so they pull tNPS down.': 'Cuántas encuestas de promotores (puntaje de 9 o 10) seguidas necesita el técnico, sin detractores, para subir el tNPS de este mes a la meta. Los pasivos (7 u 8) no restan, pero sí cuentan como encuestas, así que bajan el tNPS.', 'Repeat': 'Repetición', 'Rework': 'Retrabajo', 'PHT pass': 'PHT aprobado',
     'Appts met': 'Citas cumplidas', 'FTR, 6 months': 'FTR, 6 meses', 'low': 'pocas',
     'Tech detail': 'Detalle del técnico',
     'Monthly rates for the selected tech against the team, with the target as a dashed line.': 'Tasas mensuales del técnico seleccionado frente al equipo, con la meta como línea punteada.',
@@ -1856,7 +1871,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     'tNPS fails': 'Echèk tNPS', 'FTR fails': 'Echèk FTR',
     'Detractor surveys (scores of 0 to 6) the tech got this fiscal month.': 'Sondaj detraktè (nòt 0 a 6) teknisyen an resevwa mwa fiskal sa a.',
     'Jobs this fiscal month that did not count as a first-time fix.': 'Travay mwa fiskal sa a ki pa t konte kòm reparasyon premye fwa.',
-    'Fixes to target': 'Pou rive nan objektif', 'Repeat': 'Repetisyon', 'Rework': 'Retravay', 'PHT pass': 'PHT pase',
+    'Fixes to target': 'Pou rive nan objektif', 'Promoters to target': 'Pwomotè pou objektif', 'How many promoter surveys (scores of 9 or 10) in a row the tech needs, with no detractors, to bring this month’s tNPS up to target. Passives (7 or 8) don’t subtract, but they still count as surveys, so they pull tNPS down.': 'Konbyen sondaj pwomotè (nòt 9 oswa 10) youn dèyè lòt teknisyen an bezwen, san detraktè, pou tNPS mwa sa a rive nan objektif. Pasif yo (7 oswa 8) pa retire pwen, men yo konte kòm sondaj, kidonk yo fè tNPS la desann.', 'Repeat': 'Repetisyon', 'Rework': 'Retravay', 'PHT pass': 'PHT pase',
     'Appts met': 'Randevou respekte', 'FTR, 6 months': 'FTR, 6 mwa', 'low': 'piti',
     'Tech detail': 'Detay teknisyen',
     'Monthly rates for the selected tech against the team, with the target as a dashed line.': 'To chak mwa pou teknisyen ou chwazi a konpare ak ekip la, ak objektif la an liy pwentiye.',
@@ -1927,7 +1942,10 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     [/^👑 In the lead(?: by ([\d.]+) pts)?$/, (m) => '👑 An tèt' + (m[1] ? ` ak ${m[1]} pwen davans` : '')],
     [/^🔥 ([\d.]+) pts behind (🥇|🥈)(?: · (\d+) fewer FTR fails? would (take the lead|move into 2nd)|( · needs a tNPS or tool usage boost to pass))$/, (m) => `🔥 ${m[1]} pwen dèyè ${m[2]}` + (m[5] ? ' · bezwen ogmante tNPS oswa itilizasyon zouti pou pase' : ` · ${m[3]} echèk FTR mwens ${m[4] === 'take the lead' ? 'ta mete l an tèt' : 'ta monte l nan 2yèm plas'}`)],
     [/^(\d+) FTR fails? of (\d+) jobs$/, (m) => `${m[1]} echèk FTR sou ${m[2]} travay`],
-    [/^(\d+) detractors?$/, (m) => `${m[1]} detraktè`],
+    [/^(\d+) detractors? · (\d+) passives?$/, (m) => `${m[1]} detraktè · ${m[2]} pasif`],
+    [/^Tech (\w+) has no tNPS surveys yet this month\.$/, (m) => `Teknisyen ${m[1]} poko gen sondaj tNPS mwa sa a.`],
+    [/^Tech (\w+) is at ([\d.]+%) tNPS on (\d+) surveys this month \((\d+) detractors?, (\d+) passives?\)\. They need (\d+) promoter surveys \(9–10\) in a row, with no detractors, to reach ([\d.]+%)\.$/, (m) => `Teknisyen ${m[1]} gen ${m[2]} tNPS sou ${m[3]} sondaj mwa sa a (${m[4]} detraktè, ${m[5]} pasif). Li bezwen ${m[6]} sondaj pwomotè (9–10) youn dèyè lòt, san detraktè, pou rive ${m[7]}.`],
+    [/^Tech (\w+) is at ([\d.]+%) tNPS on (\d+) surveys this month, which meets the ([\d.]+%) target\.$/, (m) => `Teknisyen ${m[1]} gen ${m[2]} tNPS sou ${m[3]} sondaj mwa sa a, sa ki rive nan objektif ${m[4]} an.`],
     [/^.+$/, (m) => labelHT(m[0])],
     [/^([A-Z][a-z]{2}) MTD$/, (m) => `${moh(m[1])}*`],
     [/^([A-Z][a-z]{2}) (\d{1,2})(\*?)$/, (m) => MH[m[1]] ? `${m[2]} ${moh(m[1])}${m[3]}` : null],
@@ -2000,7 +2018,10 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     [/^👑 In the lead(?: by ([\d.]+) pts)?$/, (m) => '👑 Va a la cabeza' + (m[1] ? ` por ${m[1]} pts` : '')],
     [/^🔥 ([\d.]+) pts behind (🥇|🥈)(?: · (\d+) fewer FTR fails? would (take the lead|move into 2nd)|( · needs a tNPS or tool usage boost to pass))$/, (m) => `🔥 ${m[1]} pts detrás de ${m[2]}` + (m[5] ? ' · necesita subir el tNPS o el uso de herramienta para pasar' : ` · ${m[3]} ${m[3] === '1' ? 'falla' : 'fallas'} FTR menos ${m[4] === 'take the lead' ? 'le darían la delantera' : 'lo pasarían al 2.º lugar'}`)],
     [/^(\d+) FTR fails? of (\d+) jobs$/, (m) => `${m[1]} ${m[1] === '1' ? 'falla' : 'fallas'} FTR de ${m[2]} trabajos`],
-    [/^(\d+) detractors?$/, (m) => `${m[1]} ${m[1] === '1' ? 'detractor' : 'detractores'}`],
+    [/^(\d+) detractors? · (\d+) passives?$/, (m) => `${m[1]} ${m[1] === '1' ? 'detractor' : 'detractores'} · ${m[2]} ${m[2] === '1' ? 'pasivo' : 'pasivos'}`],
+    [/^Tech (\w+) has no tNPS surveys yet this month\.$/, (m) => `El técnico ${m[1]} todavía no tiene encuestas tNPS este mes.`],
+    [/^Tech (\w+) is at ([\d.]+%) tNPS on (\d+) surveys this month \((\d+) detractors?, (\d+) passives?\)\. They need (\d+) promoter surveys \(9–10\) in a row, with no detractors, to reach ([\d.]+%)\.$/, (m) => `El técnico ${m[1]} tiene ${m[2]} de tNPS en ${m[3]} encuestas este mes (${m[4]} ${m[4] === '1' ? 'detractor' : 'detractores'}, ${m[5]} ${m[5] === '1' ? 'pasivo' : 'pasivos'}). Necesita ${m[6]} encuestas de promotores (9–10) seguidas, sin detractores, para llegar a ${m[7]}.`],
+    [/^Tech (\w+) is at ([\d.]+%) tNPS on (\d+) surveys this month, which meets the ([\d.]+%) target\.$/, (m) => `El técnico ${m[1]} tiene ${m[2]} de tNPS en ${m[3]} encuestas este mes, lo que cumple la meta de ${m[4]}.`],
     [/^.+$/, (m) => label(m[0])],
     [/^([A-Z][a-z]{2}) MTD$/, (m) => `${mo(m[1])}*`],
     [/^([A-Z][a-z]{2}) (\d{1,2})(\*?)$/, (m) => M[m[1]] ? `${m[2]} ${mo(m[1])}${m[3]}` : null],
