@@ -418,9 +418,55 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   .sc-mk-more > summary .n { display: inline-block; min-width: 1.5em; padding: 0 7px; border-radius: 999px; text-align: center; background: var(--color-border-line); color: var(--color-fg); font-variant-numeric: tabular-nums; }
   @media (prefers-reduced-motion: reduce) { .sc-mk-more > summary::before { transition: none; } }
   .sc-mk-table tr.sep td { background: none; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-weight: 600; padding-top: var(--cds-pad-lg); }
+  /* Desktop intro: a short title card with the team's numbers that fades on its own (Dillon, Nov 8). Phones never see it. */
+  .sc-intro { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; text-align: center; color: #e9edf3; background: radial-gradient(ellipse at 60% 70%, #1a2740 0%, #0d121a 60%); transition: opacity .8s ease, visibility .8s; overflow: hidden; }
+  .sc-intro.out { opacity: 0; visibility: hidden; }
+  .sc-intro canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .sc-intro .w { position: relative; padding: 0 24px; }
+  .sc-intro .ik { letter-spacing: .3em; text-transform: uppercase; font-size: 13px; color: #e8b931; }
+  .sc-intro h2 { font: 600 clamp(48px, 7vw, 92px)/1.05 Georgia, 'Times New Roman', serif; margin: 12px 0 6px; }
+  .sc-intro .sub { color: #8b95a5; }
+  .sc-intro .stats { display: flex; gap: clamp(28px, 6vw, 84px); justify-content: center; margin: 44px 0 26px; }
+  .sc-intro .st b { display: block; font: 600 clamp(36px, 5vw, 60px)/1 Georgia, serif; font-variant-numeric: tabular-nums; }
+  .sc-intro .st b.miss { color: #f07070; }
+  .sc-intro .st span { font-size: 13px; color: #8b95a5; letter-spacing: .12em; text-transform: uppercase; }
+  .sc-intro svg { width: min(620px, 86vw); height: 36px; }
+  .sc-intro svg path { stroke: #e8b931; stroke-width: 2; fill: none; stroke-dasharray: 640; stroke-dashoffset: 640; animation: sc-draw 2s 1.6s ease-out forwards; }
+  .sc-intro .champ { margin-top: 12px; }
+  .sc-intro .champ em { font-style: normal; color: #e8b931; font-weight: 600; }
+  .sc-intro .champ .nm { color: #e8b931; font-weight: 600; }
+  .sc-intro .skip { position: absolute; top: 18px; right: 20px; background: none; border: 1px solid #2a3342; color: #8b95a5; padding: 6px 14px; border-radius: 999px; cursor: pointer; font: inherit; font-size: 13px; }
+  .sc-intro .skip:hover { color: #e9edf3; border-color: #5a6578; }
+  .sc-intro .bar { position: absolute; left: 0; bottom: 0; height: 3px; background: #e8b931; opacity: .7; animation: sc-bar 5.5s linear forwards; }
+  .sc-intro .ik, .sc-intro h2, .sc-intro .sub, .sc-intro .st, .sc-intro svg, .sc-intro .champ { opacity: 0; animation: sc-up .9s forwards; }
+  .sc-intro .ik { animation-delay: .1s; } .sc-intro h2 { animation-delay: .35s; } .sc-intro .sub { animation-delay: .65s; }
+  .sc-intro .st:nth-child(1) { animation-delay: .9s; } .sc-intro .st:nth-child(2) { animation-delay: 1.05s; } .sc-intro .st:nth-child(3) { animation-delay: 1.2s; }
+  .sc-intro svg { animation-duration: .4s; animation-delay: 1.5s; } .sc-intro .champ { animation-delay: 2.6s; }
+  @keyframes sc-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  @keyframes sc-draw { to { stroke-dashoffset: 0; } }
+  @keyframes sc-bar { from { width: 0; } to { width: 100%; } }
+  @media (prefers-reduced-motion: reduce) { .sc-intro *, .sc-intro svg path { animation: none !important; opacity: 1 !important; stroke-dashoffset: 0 !important; } .sc-intro .bar { display: none; } }
+  @media (max-width: 820px), (hover: none) { .sc-intro { display: none; } }
 </style>
 
 <div class="sc">
+  <div class="sc-intro" id="sc-intro" role="dialog" aria-label="Intro" data-draw="intro" data-source="team_latest top_tech race">
+    <canvas aria-hidden="true"></canvas>
+    <button class="skip" type="button">Skip</button>
+    <div class="w">
+      <div class="ik"><span>Broward &amp; Dade</span> · <span class="ip">—</span></div>
+      <h2>Tech Scorecard</h2>
+      <div class="sub">Every job. Every survey. Every first-time fix.</div>
+      <div class="stats">
+        <div class="st"><b data-k="tu">—</b><span>Tool usage</span></div>
+        <div class="st"><b data-k="tnps">—</b><span>tNPS</span></div>
+        <div class="st"><b data-k="ftr">—</b><span>FTR</span></div>
+      </div>
+      <svg viewBox="0 0 620 36" aria-hidden="true"><path d="M10 28 C 160 28, 200 6, 320 16 S 520 30, 610 12"/></svg>
+      <div class="champ">🏆 <span>Top tech</span> <em class="ic">—</em> &nbsp;·&nbsp; 🏁 <span>Race leader</span> <em class="il">—</em> <span class="ipt"></span></div>
+    </div>
+    <div class="bar"></div>
+  </div>
   <header class="sc-head">
     <div class="sc-head-top">
       <div class="sc-head-text">
@@ -1584,6 +1630,42 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     }
   });
   const withName = (el, id, empty) => { el.replaceChildren(document.createTextNode(id ? 'Tech ' + id : empty)); const n = id && SC.names[id]; if (n) { const s = document.createElement('span'); s.className = 'nm'; s.textContent = n; el.append(' ', s); } };
+
+  /* Desktop intro: shows on wide screens with a mouse, unless the link points at a tab; fades by itself after about 5.5 s,
+     or right away on a click, key, scroll or the Skip button. */
+  { const intro = document.getElementById('sc-intro');
+    const wanted = intro && matchMedia('(min-width: 821px) and (hover: hover)').matches && !location.hash;
+    if (intro && !wanted) intro.remove();
+    else if (intro) {
+      let gone = false;
+      const close = () => { if (gone) return; gone = true; intro.classList.add('out'); document.documentElement.style.overflow = ''; setTimeout(() => intro.remove(), 900); };
+      document.documentElement.style.overflow = 'hidden';
+      setTimeout(close, 5500);
+      intro.addEventListener('click', close);
+      for (const ev of ['keydown', 'wheel', 'touchstart']) addEventListener(ev, close, { once: true, passive: true });
+      /* Slow gold dust behind the title. */
+      const c = intro.querySelector('canvas'), x = c.getContext('2d'); let pts = [];
+      const size = () => { c.width = innerWidth; c.height = innerHeight; pts = Array.from({ length: 70 }, () => ({ x: Math.random() * c.width, y: Math.random() * c.height, r: Math.random() * 1.6 + .3, v: Math.random() * .25 + .05 })); };
+      size();
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) (function dust() { if (gone && !intro.isConnected) return; x.clearRect(0, 0, c.width, c.height); x.fillStyle = 'rgba(232,185,49,.35)'; for (const p of pts) { p.y -= p.v; if (p.y < 0) p.y = c.height; x.beginPath(); x.arc(p.x, p.y, p.r, 0, 7); x.fill(); } requestAnimationFrame(dust); })();
+    }
+  }
+  dash.draw('intro', (el) => {
+    const t = dash.data('team_latest'), r = t.status === 'ok' ? t.data[0] : null; if (!r) return;
+    el.querySelector('.ip').textContent = r.period_label;
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    for (const b of el.querySelectorAll('[data-k]')) {
+      const k = b.dataset.k, v = r[k]; if (v == null) { b.textContent = '—'; continue; }
+      b.classList.toggle('miss', v < SC.T[k]);
+      if (still || b.dataset.done) { b.textContent = d3.format('.1f')(v) + '%'; continue; }
+      b.dataset.done = '1'; const t0 = performance.now() + 900;
+      (function f(n) { const q = Math.max(0, Math.min(1, (n - t0) / 1500)), e = 1 - Math.pow(1 - q, 3); b.textContent = d3.format('.1f')(v * e) + '%'; if (q < 1) requestAnimationFrame(f); })(performance.now());
+    }
+    const c = champ(); withName(el.querySelector('.ic'), c && c.tech_id, c ? 'No winner this period' : '—');
+    const rc = dash.data('race'), lead = rc.status === 'ok' ? rc.data[0] : null;
+    withName(el.querySelector('.il'), lead && lead.tech_id, '—');
+    el.querySelector('.ipt').textContent = lead ? d3.format('.1f')(lead.score) + ' pts' : '';
+  });
   dash.draw('spotchamp', (el) => { const c = champ(); withName(el, c && c.tech_id, c ? 'No winner this period' : '—'); });
   dash.draw('spotlead', (el) => { const d = dash.data('race'); const r = d.status === 'ok' ? d.data[0] : null; withName(el, r && r.tech_id, '—'); });
   dash.draw('champperson', (el) => { const c = champ(); el.textContent = (c && c.tech_id && SC.names[c.tech_id]) || ''; });
@@ -2126,6 +2208,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     'Not ranked: no FTR or tool usage results in this timeframe': 'Sin clasificar: sin resultados de FTR o uso de herramienta en este periodo',
     'Score: 60% FTR, 30% tNPS and 10% tool usage. So a small sample can\'t jump to the top, the score blends each tech\'s FTR and tNPS with the market average: FTR as if they had 20 more jobs at the market rate, tNPS as if they had 5 more surveys at the market rate. The blend fades as jobs and surveys add up. The FTR and tNPS columns show each tech\'s real numbers. Highlighted rows are techs on this team. Select a column heading to sort by it.': 'Puntaje: 60% FTR, 30% tNPS y 10% uso de herramienta. Para que una muestra pequeña no suba al primer lugar, el puntaje combina el FTR y el tNPS de cada técnico con el promedio del mercado: el FTR como si tuviera 20 trabajos más al nivel del mercado y el tNPS como si tuviera 5 encuestas más al nivel del mercado. El efecto se reduce a medida que suma trabajos y encuestas. Las columnas FTR y tNPS muestran los números reales de cada técnico. Las filas resaltadas son técnicos de este equipo. Seleccione el título de una columna para ordenar por ella.',
     'Score: 60% FTR, 30% tNPS and 10% tool usage, the same as the race. A tech needs at least 40 jobs and 5 surveys in the timeframe to be ranked; the rest are in the drop-down below the ranking. Highlighted rows are techs on this team. Select a column heading to sort by it.': 'Puntaje: 60% FTR, 30% tNPS y 10% uso de herramienta, igual que la carrera. Un técnico necesita al menos 40 trabajos y 5 encuestas en el periodo para clasificar; los demás están en la lista desplegable debajo de la clasificación. Las filas resaltadas son técnicos de este equipo. Seleccione el título de una columna para ordenar por ella.',
+    'Skip': 'Omitir', 'Tech Scorecard': 'Tablero de técnicos', 'Every job. Every survey. Every first-time fix.': 'Cada trabajo. Cada encuesta. Cada arreglo a la primera.',
     'Top tech': 'Mejor técnico', 'Race leader': 'Líder de la carrera', 'Show': 'Mostrar', 'Hide': 'Ocultar',
     'QC observations by other observers': 'Observaciones de QC hechas por otros observadores', 'QCs by tech': 'QC por técnico',
     'Select a tech to see only theirs.': 'Selecciona un técnico para ver solo los suyos.', 'All QCs': 'Todos los QC',
@@ -2216,6 +2299,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     'Not ranked: no FTR or tool usage results in this timeframe': 'Pa klase: pa gen rezilta FTR oswa itilizasyon zouti nan peryòd sa a',
     'Score: 60% FTR, 30% tNPS and 10% tool usage. So a small sample can\'t jump to the top, the score blends each tech\'s FTR and tNPS with the market average: FTR as if they had 20 more jobs at the market rate, tNPS as if they had 5 more surveys at the market rate. The blend fades as jobs and surveys add up. The FTR and tNPS columns show each tech\'s real numbers. Highlighted rows are techs on this team. Select a column heading to sort by it.': 'Pwen: 60% FTR, 30% tNPS ak 10% itilizasyon zouti. Pou yon ti echantiyon pa monte tou dwat an tèt, pwen an melanje FTR ak tNPS chak teknisyen ak mwayèn mache a: FTR la tankou si li te gen 20 travay anplis nan nivo mache a, tNPS la tankou si li te gen 5 sondaj anplis nan nivo mache a. Efè a vin pi piti pandan travay ak sondaj yo ap ogmante. Kolòn FTR ak tNPS yo montre vrè chif chak teknisyen. Liy ki an koulè yo se teknisyen ekip sa a. Chwazi tit yon kolòn pou ranje lis la dapre li.',
     'Score: 60% FTR, 30% tNPS and 10% tool usage, the same as the race. A tech needs at least 40 jobs and 5 surveys in the timeframe to be ranked; the rest are in the drop-down below the ranking. Highlighted rows are techs on this team. Select a column heading to sort by it.': 'Pwen: 60% FTR, 30% tNPS ak 10% itilizasyon zouti, menm jan ak kous la. Yon teknisyen bezwen omwen 40 travay ak 5 sondaj nan peryòd la pou l klase; lòt yo nan lis ki ka louvri anba klasman an. Liy ki an koulè yo se teknisyen ekip sa a. Chwazi tit yon kolòn pou ranje lis la dapre li.',
+    'Skip': 'Sote', 'Tech Scorecard': 'Tablo teknisyen yo', 'Every job. Every survey. Every first-time fix.': 'Chak travay. Chak sondaj. Chak reparasyon depi premye fwa.',
     'Top tech': 'Pi bon teknisyen', 'Race leader': 'Premye nan kous la', 'Show': 'Montre', 'Hide': 'Kache',
     'No tech met all three targets with at least 40 jobs over the last 30 days.': 'Pa gen teknisyen ki rive nan twa objektif yo ak omwen 40 travay nan 30 dènye jou yo.',
     'Lines mark where a new fiscal month starts. A week that crosses the 22nd goes with the month that has most of its days.': 'Liy yo montre kote yon nouvo mwa fiskal kòmanse. Yon semèn ki travèse 22 a ale ak mwa ki gen plis nan jou li yo.',
