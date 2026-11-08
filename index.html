@@ -1178,13 +1178,17 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   { const bar = document.getElementById('spot-bar');
     if (bar) bar.addEventListener('click', () => { const spot = document.getElementById('spotlight'); const open = spot.hidden; spot.hidden = !open; bar.setAttribute('aria-expanded', String(open)); }); }
   for (const b of document.querySelectorAll('.sc-tab')) b.addEventListener('click', () => { showPage(b.dataset.page); dash.setLink(b.dataset.page); });
-  /* On Overview, the first scroll down folds the top tech and race into the slim bar, keeping what's on screen in place. Once per visit to Overview. */
-  { let lastY = window.scrollY, folded = false;
+  /* On Overview, the first scroll down folds the top tech and race into the slim bar, keeping what's on screen in place. Once per visit to Overview.
+     Only a scroll the viewer makes counts (wheel, touch, keys, scrollbar), not the browser putting a reloaded page back where it was. */
+  { let lastY = window.scrollY, folded = false, userAt = 0;
     const reset = () => { folded = false; lastY = window.scrollY; };
     for (const b of document.querySelectorAll('.sc-tab')) b.addEventListener('click', reset);
+    const mark = () => { userAt = Date.now(); };
+    for (const ev of ['wheel', 'touchmove', 'mousedown']) addEventListener(ev, mark, { passive: true });
+    addEventListener('keydown', (e) => { if (['ArrowDown', 'PageDown', 'End', ' ', 'Spacebar'].includes(e.key)) mark(); });
     window.addEventListener('scroll', () => {
       const yNow = window.scrollY, down = yNow > lastY; lastY = yNow;
-      if (folded || !down || yNow < 8 || SC.page && SC.page !== 'overview') return;
+      if (folded || !down || yNow < 8 || SC.page && SC.page !== 'overview' || Date.now() - userAt > 800) return;
       const bar = document.getElementById('spot-bar'), spot = document.getElementById('spotlight');
       if (!bar || !spot || spot.hidden) { folded = true; return; }
       folded = true;
