@@ -1540,7 +1540,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   dash.onData(() => window.SC.notesEmpty());
 
   /* Tech avatars by tech id: image paths next to the page (avatars/<id>.jpg on the site). Techs not listed get an empty circle. */
-  SC.avatars = {"I04A": "avatars/I04A.jpg", "I0N1": "avatars/I0N1.jpg", "7302": "avatars/7302.jpg", "7134": "avatars/7134.jpg", "7189": "avatars/7189.jpg", "7338": "avatars/7338.jpg", "7150": "avatars/7150.jpg"};
+  SC.avatars = {"I04A": "avatars/I04A.jpg", "I0N1": "avatars/I0N1.jpg", "7302": "avatars/7302.jpg", "7134": "avatars/7134.jpg", "7189": "avatars/7189.jpg", "7338": "avatars/7338.jpg", "7150": "avatars/7150.jpg", "7044": "avatars/7044.jpg"};
   SC.av = (id, size) => {
     const s = document.createElement('span'); s.className = 'sc-av'; s.setAttribute('aria-hidden', 'true'); if (size) s.style.setProperty('--av', size + 'px');
     const src = id && SC.avatars[id];
