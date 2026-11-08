@@ -408,6 +408,15 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   .sc-mk-table tr.ours td:first-child { box-shadow: inset 3px 0 0 #e8b931; }
   .sc-mk-table .chip { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px; font-size: 11px; font-weight: 600; background: #e8b931; color: #1a212c; vertical-align: 1px; }
   .sc-mk-table tr.nq td { color: var(--color-fg-muted); }
+  .sc-mk-more { margin-top: var(--cds-gap-sm); border-top: 1px solid var(--color-border-line); }
+  .sc-mk-more > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; padding: var(--cds-pad-sm) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); font-weight: 600; color: var(--color-fg-muted); }
+  .sc-mk-more > summary::-webkit-details-marker { display: none; }
+  .sc-mk-more > summary::before { content: ""; width: 7px; height: 7px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg); transition: transform .2s; margin-right: 2px; }
+  .sc-mk-more[open] > summary::before { transform: rotate(45deg); }
+  .sc-mk-more > summary:hover { color: var(--color-fg); }
+  .sc-mk-more > summary:focus-visible { outline: 2px solid var(--cds-chart-axis); outline-offset: 2px; border-radius: 4px; }
+  .sc-mk-more > summary .n { display: inline-block; min-width: 1.5em; padding: 0 7px; border-radius: 999px; text-align: center; background: var(--color-border-line); color: var(--color-fg); font-variant-numeric: tabular-nums; }
+  @media (prefers-reduced-motion: reduce) { .sc-mk-more > summary::before { transition: none; } }
   .sc-mk-table tr.sep td { background: none; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-weight: 600; padding-top: var(--cds-pad-lg); }
 </style>
 
@@ -757,7 +766,27 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
           <tbody data-draw="mktable" data-source="market tech_table"></tbody>
         </table>
       </div>
-      <p class="sc-note">Score: 60% FTR, 30% tNPS and 10% tool usage, the same as the race. A tech needs at least 40 jobs and 5 surveys in the timeframe to be ranked; the rest are listed below the ranking. Highlighted rows are techs on this team. Select a column heading to sort by it.</p>
+      <details class="sc-mk-more" id="sc-mkmore">
+        <summary><span>Not ranked: no FTR or tool usage results in this timeframe</span> <span class="n" data-draw="mkrestn" data-source="market">0</span></summary>
+        <div class="sc-tablebox" style="max-height:none">
+          <table class="sc-table sc-mk-table" id="sc-mktable2">
+            <thead><tr>
+              <th class="l" data-col="tech_id"><button type="button">Tech</button></th>
+              <th class="l hide-sm" data-col="sup"><button type="button">Supervisor</button></th>
+              <th class="l" data-col="misses"><button type="button">Status</button></th>
+              <th class="hide-sm" data-col="jobs"><button type="button">Jobs</button></th>
+              <th class="hide-sm" data-col="tc_share"><button type="button">Job mix</button></th>
+              <th class="grp hide-sm" data-col="tu"><button type="button">Tool usage</button></th>
+              <th data-col="tnps"><button type="button">tNPS</button></th>
+              <th class="hide-sm" data-col="tnps_fails"><button type="button">tNPS fails</button></th>
+              <th data-col="ftr"><button type="button">FTR</button></th>
+              <th class="hide-sm" data-col="ftr_fails"><button type="button">FTR fails</button></th>
+            </tr></thead>
+            <tbody data-draw="mktable2" data-source="market tech_table"></tbody>
+          </table>
+        </div>
+      </details>
+      <p class="sc-note">Score: 60% FTR, 30% tNPS and 10% tool usage. So a small sample can't jump to the top, the score blends each tech's FTR and tNPS with the market average: FTR as if they had 20 more jobs at the market rate, tNPS as if they had 5 more surveys at the market rate. The blend fades as jobs and surveys add up. The FTR and tNPS columns show each tech's real numbers. Highlighted rows are techs on this team. Select a column heading to sort by it.</p>
     </article>
   </section>
 
@@ -1846,17 +1875,24 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     const rows = d.data.filter((r) => r.market === SC.mk.market);
     const ps = [...new Set(d.data.map((r) => r.period_start))].sort(), win = ps.slice(-SC.mk.win);
     const inWin = rows.filter((r) => win.includes(r.period_start));
-    const W = { ftr: 0.6, tnps: 0.3, tu: 0.1 }, out = [];
+    /* Small samples are blended with the market average (Dillon, Nov 8): FTR as if the tech had K.ftr more jobs at the market rate,
+       tNPS as if they had K.tnps more surveys at the market rate. Everyone with FTR and tool usage results is ranked. */
+    const W = { ftr: 0.6, tnps: 0.3, tu: 0.1 }, K = { ftr: 20, tnps: 5 }, out = [];
+    const tot = (k) => inWin.reduce((a, r) => a + (+r[k] || 0), 0);
+    const mFt = tot('ftr_total_jobs'), mS = tot('tnps_surveys');
+    const mktFtr = mFt ? 100 * (mFt - tot('ftr_fail_jobs')) / mFt : SC.T.ftr, mktNps = mS ? 100 * (tot('promoters') - tot('detractors')) / mS : SC.T.tnps;
     for (const id of new Set(inWin.map((r) => r.tech_id))) {
       const mine = inWin.filter((r) => r.tech_id === id); const s = (k) => mine.reduce((a, r) => a + (+r[k] || 0), 0);
       const jobs = s('total_jobs'), surveys = s('tnps_surveys'), ft = s('ftr_total_jobs'), tue = s('tu_eligible');
       const ftr = ft ? 100 * (ft - s('ftr_fail_jobs')) / ft : null, tnps = surveys ? 100 * (s('promoters') - s('detractors')) / surveys : null, tu = tue ? 100 * s('tu_result') / tue : null;
-      const ok = jobs >= 40 && surveys >= 5 && ftr != null && tu != null;
+      const ok = ftr != null && tu != null;
+      const adjFtr = (100 * (ft - s('ftr_fail_jobs')) + K.ftr * mktFtr) / (ft + K.ftr);
+      const adjNps = (100 * (s('promoters') - s('detractors')) + K.tnps * mktNps) / (surveys + K.tnps);
       const tu_miss = tu != null && tu < SC.T.tu, tnps_miss = surveys >= 5 && tnps != null && tnps < SC.T.tnps, ftr_miss = ftr != null && ftr < SC.T.ftr;
       const misses = [tu_miss, tnps_miss, ftr_miss].filter(Boolean).length;
       const inst = s('installs'), tcs = s('tcs'), sros = s('sros'), mixT = inst + tcs + sros;
       const sh = (v) => mixT ? Math.round(1000 * v / mixT) / 10 : 0;
-      out.push({ tech_id: id, sup: mine[mine.length - 1].supervisor || '', jobs, surveys, ftr, tnps, tu, ok, score: ok ? W.ftr * ftr + W.tnps * tnps + W.tu * tu : null,
+      out.push({ tech_id: id, sup: mine[mine.length - 1].supervisor || '', jobs, surveys, ftr, tnps, tu, ok, score: ok ? W.ftr * adjFtr + W.tnps * adjNps + W.tu * tu : null, adj_ftr: adjFtr, adj_tnps: adjNps,
         misses, status: misses === 0 ? 'On target' : misses + ' below target', tu_miss, tnps_miss, ftr_miss, low_sample: surveys < 5,
         tnps_fails: s('detractors'), ftr_fails: s('ftr_fail_jobs'), has_mix: mixT > 0,
         install_share: sh(inst), tc_share: mixT ? sh(tcs) : null, sro_share: sh(sros),
@@ -1871,11 +1907,11 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   const mkOurs = () => { const t = dash.data('tech_table'); return new Set(t.status === 'ok' ? t.data.map((r) => String(r.tech_id)) : []); };
   for (const b of document.querySelectorAll('[data-market]')) b.addEventListener('click', () => {
     SC.mk.market = b.dataset.market; document.querySelectorAll('[data-market]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-    ['mktitle', 'mknote', 'mksum', 'mktable'].forEach((n) => dash.draw(n));
+    ['mktitle', 'mknote', 'mksum', 'mktable', 'mktable2', 'mkrestn'].forEach((n) => dash.draw(n));
   });
   for (const b of document.querySelectorAll('[data-mkwin]')) b.addEventListener('click', () => {
     SC.mk.win = +b.dataset.mkwin; document.querySelectorAll('[data-mkwin]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-    ['mktitle', 'mknote', 'mksum', 'mktable'].forEach((n) => dash.draw(n));
+    ['mktitle', 'mknote', 'mksum', 'mktable', 'mktable2', 'mkrestn'].forEach((n) => dash.draw(n));
   });
   dash.draw('mktitle', (el) => { el.textContent = SC.mk.market === 'Dade' ? 'Dade market leaders' : 'Broward market leaders'; });
   dash.draw('mknote', (el) => {
@@ -1893,51 +1929,61 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       .forEach(([k, v, tag]) => { const d = fbEl('div', 'sc-tile'); d.appendChild(fbEl('span', 'k', k)); const row = fbEl('div', 'row'); row.appendChild(fbEl('span', 'v', v)); if (tag) row.appendChild(fbEl('span', 'tag', tag)); d.appendChild(row); el.appendChild(d); });
   });
   SC.mk.sort = { col: 'rank', dir: 'ascending' };
-  dash.draw('mktable', (el) => {
-    el.replaceChildren(); const m = mkRows(); if (!m) return;
-    const ours = mkOurs(), medals = ['🥇', '🥈', '🥉'], { col, dir } = SC.mk.sort;
+  const mkLine = (r, ranked, ours) => {
+    const medals = ['🥇', '🥈', '🥉'];
     const cell = (tr, cls, text) => { const td = fbEl('td', cls, text); tr.appendChild(td); return td; };
-    const line = (r) => {
-      const tr = fbEl('tr', (ours.has(String(r.tech_id)) ? 'ours ' : '') + (r.ok ? '' : 'nq'));
-      cell(tr, 'rk l', r.ok ? (r.rank <= 3 ? medals[r.rank - 1] + ' ' : '') + r.rank : '—');
-      const t = cell(tr, 'l tech', 'Tech ' + r.tech_id);
-      if (ours.has(String(r.tech_id))) t.appendChild(fbEl('span', 'chip', 'Our team'));
-      cell(tr, 'l sup hide-sm', r.sup);
-      const st = cell(tr, 'l'); const p = fbEl('span', 'sc-pill ' + (r.misses === 0 ? 'ok' : r.misses === 1 ? 'warn' : 'bad'), r.status); st.appendChild(p);
-      cell(tr, 'mkscore', r.ok ? d3.format('.1f')(r.score) : '—');
-      cell(tr, 'hide-sm', d3.format(',')(r.jobs));
-      const mc = cell(tr, 'hide-sm');
-      if (r.has_mix) { const bar = fbEl('div', 'sc-mix'); bar.title = r.mix; [r.install_share, r.tc_share, r.sro_share].forEach((v, i) => { const seg = document.createElement('span'); seg.style.width = v + '%'; seg.style.background = mixColors()[i]; bar.appendChild(seg); }); mc.appendChild(bar); }
-      else mc.textContent = '—';
-      cell(tr, 'grp hide-sm' + (r.tu_miss ? ' miss' : ''), SC.pct(r.tu));
-      const n = cell(tr, r.tnps_miss ? 'miss' : r.surveys && r.low_sample ? 'dim' : '', r.surveys ? SC.pct(r.tnps) : '—');
-      if (r.surveys && r.low_sample) { const lo = fbEl('span', 'sc-low', 'low'); lo.title = r.surveys + ' surveys'; n.appendChild(lo); }
-      cell(tr, 'hide-sm' + (r.tnps_fails > 0 ? ' miss' : ''), String(r.tnps_fails));
-      cell(tr, r.ftr_miss ? 'miss' : '', SC.pct(r.ftr));
-      cell(tr, 'hide-sm' + (r.ftr_fails > 0 ? ' miss' : ''), String(r.ftr_fails));
-      el.appendChild(tr);
-    };
-    if (col === 'rank') {
-      /* Rank order keeps the ranked techs together and lists the unranked ones underneath. */
-      (dir === 'ascending' ? m.ranked : m.ranked.slice().reverse()).forEach(line);
-      if (m.rest.length) { const tr = fbEl('tr', 'sep'); const td = fbEl('td', 'l', 'Not ranked yet: under 40 jobs or 5 surveys in this timeframe'); td.colSpan = 12; tr.appendChild(td); el.appendChild(tr); m.rest.forEach(line); }
-      return;
-    }
-    const rows = m.ranked.concat(m.rest).sort((a, b) => {
+    const tr = fbEl('tr', ours.has(String(r.tech_id)) ? 'ours' : '');
+    if (ranked) cell(tr, 'rk l', (r.rank <= 3 ? medals[r.rank - 1] + ' ' : '') + r.rank);
+    const t = cell(tr, 'l tech', 'Tech ' + r.tech_id);
+    if (ours.has(String(r.tech_id))) t.appendChild(fbEl('span', 'chip', 'Our team'));
+    cell(tr, 'l sup hide-sm', r.sup);
+    const st = cell(tr, 'l'); st.appendChild(fbEl('span', 'sc-pill ' + (r.misses === 0 ? 'ok' : r.misses === 1 ? 'warn' : 'bad'), r.status));
+    if (ranked) cell(tr, 'mkscore', d3.format('.1f')(r.score));
+    cell(tr, 'hide-sm', d3.format(',')(r.jobs));
+    const mc = cell(tr, 'hide-sm');
+    if (r.has_mix) { const bar = fbEl('div', 'sc-mix'); bar.title = r.mix; [r.install_share, r.tc_share, r.sro_share].forEach((v, i) => { const seg = document.createElement('span'); seg.style.width = v + '%'; seg.style.background = mixColors()[i]; bar.appendChild(seg); }); mc.appendChild(bar); }
+    else mc.textContent = '—';
+    cell(tr, 'grp hide-sm' + (r.tu_miss ? ' miss' : ''), SC.pct(r.tu));
+    const n = cell(tr, r.tnps_miss ? 'miss' : r.surveys && r.low_sample ? 'dim' : '', r.surveys ? SC.pct(r.tnps) : '—');
+    if (r.surveys && r.low_sample) { const lo = fbEl('span', 'sc-low', 'low'); lo.title = r.surveys + ' surveys'; n.appendChild(lo); }
+    cell(tr, 'hide-sm' + (r.tnps_fails > 0 ? ' miss' : ''), String(r.tnps_fails));
+    cell(tr, r.ftr_miss ? 'miss' : '', SC.pct(r.ftr));
+    cell(tr, 'hide-sm' + (r.ftr_fails > 0 ? ' miss' : ''), String(r.ftr_fails));
+    return tr;
+  };
+  const mkSorted = (rows, fallback) => {
+    let { col, dir } = SC.mk.sort;
+    if (!rows.length || !(col in rows[0])) { col = fallback.col; dir = fallback.dir; }
+    return rows.slice().sort((a, b) => {
       const av = a[col], bv = b[col];
       const c = (typeof av === 'number' || typeof bv === 'number') ? ((av ?? -Infinity) - (bv ?? -Infinity)) : String(av).localeCompare(String(bv));
-      return (dir === 'ascending' ? c : -c) || (a.rank ?? 1e9) - (b.rank ?? 1e9);
+      return (dir === 'ascending' ? c : -c) || b.jobs - a.jobs;
     });
-    rows.forEach(line);
+  };
+  dash.draw('mktable', (el) => {
+    el.replaceChildren(); const m = mkRows(); if (!m) return;
+    const ours = mkOurs();
+    mkSorted(m.ranked, { col: 'rank', dir: 'ascending' }).forEach((r) => el.appendChild(mkLine(r, true, ours)));
   });
-  for (const th of document.querySelectorAll('#sc-mktable th[data-col]')) {
+  /* Techs with no FTR or tool usage results: same numbers, no rank or score, in the drop-down under the ranking. Rank and score sorts fall back to most jobs first. */
+  dash.draw('mktable2', (el) => {
+    el.replaceChildren(); const m = mkRows(); if (!m) return;
+    const ours = mkOurs(), c = SC.mk.sort.col;
+    const rows = c === 'rank' || c === 'score' ? m.rest.slice().sort((a, b) => b.jobs - a.jobs) : mkSorted(m.rest, { col: 'jobs', dir: 'descending' });
+    rows.forEach((r) => el.appendChild(mkLine(r, false, ours)));
+  });
+  dash.draw('mkrestn', (el) => {
+    const m = mkRows(), n = m ? m.rest.length : 0; el.textContent = String(n);
+    const box = document.getElementById('sc-mkmore'); if (box) box.hidden = n === 0;
+  });
+  for (const th of document.querySelectorAll('#sc-mktable th[data-col], #sc-mktable2 th[data-col]')) {
     const b = th.querySelector('button'); if (!b) continue;
     b.addEventListener('click', () => {
       const c = th.dataset.col, text = ['tech_id', 'sup', 'rank'].includes(c);
       SC.mk.sort = SC.mk.sort.col === c ? { col: c, dir: SC.mk.sort.dir === 'ascending' ? 'descending' : 'ascending' } : { col: c, dir: text ? 'ascending' : 'descending' };
-      for (const o of document.querySelectorAll('#sc-mktable th[data-col]')) o.removeAttribute('aria-sort');
-      th.setAttribute('aria-sort', SC.mk.sort.dir);
-      dash.draw('mktable');
+      /* Both tables show the same sort. */
+      for (const o of document.querySelectorAll('#sc-mktable th[data-col], #sc-mktable2 th[data-col]')) o.toggleAttribute('aria-sort', o.dataset.col === c), o.dataset.col === c && o.setAttribute('aria-sort', SC.mk.sort.dir);
+      dash.draw('mktable'); dash.draw('mktable2');
     });
   }
 
@@ -2077,7 +2123,9 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     'Rank': 'Puesto', 'Supervisor': 'Supervisor', 'Our team': 'Nuestro equipo', 'Techs ranked': 'Técnicos clasificados', 'Market leader': 'Líder del mercado',
     'Our best rank': 'Nuestro mejor puesto', 'Our techs in the top 10': 'Nuestros técnicos en el top 10', 'No market data yet.': 'Todavía no hay datos del mercado.',
     'Not ranked yet: under 40 jobs or 5 surveys in this timeframe': 'Sin clasificar todavía: menos de 40 trabajos o 5 encuestas en este periodo',
-    'Score: 60% FTR, 30% tNPS and 10% tool usage, the same as the race. A tech needs at least 40 jobs and 5 surveys in the timeframe to be ranked; the rest are listed below the ranking. Highlighted rows are techs on this team. Select a column heading to sort by it.': 'Puntaje: 60% FTR, 30% tNPS y 10% uso de herramienta, igual que la carrera. Un técnico necesita al menos 40 trabajos y 5 encuestas en el periodo para clasificar; los demás aparecen debajo de la clasificación. Las filas resaltadas son técnicos de este equipo. Seleccione el título de una columna para ordenar por ella.',
+    'Not ranked: no FTR or tool usage results in this timeframe': 'Sin clasificar: sin resultados de FTR o uso de herramienta en este periodo',
+    'Score: 60% FTR, 30% tNPS and 10% tool usage. So a small sample can\'t jump to the top, the score blends each tech\'s FTR and tNPS with the market average: FTR as if they had 20 more jobs at the market rate, tNPS as if they had 5 more surveys at the market rate. The blend fades as jobs and surveys add up. The FTR and tNPS columns show each tech\'s real numbers. Highlighted rows are techs on this team. Select a column heading to sort by it.': 'Puntaje: 60% FTR, 30% tNPS y 10% uso de herramienta. Para que una muestra pequeña no suba al primer lugar, el puntaje combina el FTR y el tNPS de cada técnico con el promedio del mercado: el FTR como si tuviera 20 trabajos más al nivel del mercado y el tNPS como si tuviera 5 encuestas más al nivel del mercado. El efecto se reduce a medida que suma trabajos y encuestas. Las columnas FTR y tNPS muestran los números reales de cada técnico. Las filas resaltadas son técnicos de este equipo. Seleccione el título de una columna para ordenar por ella.',
+    'Score: 60% FTR, 30% tNPS and 10% tool usage, the same as the race. A tech needs at least 40 jobs and 5 surveys in the timeframe to be ranked; the rest are in the drop-down below the ranking. Highlighted rows are techs on this team. Select a column heading to sort by it.': 'Puntaje: 60% FTR, 30% tNPS y 10% uso de herramienta, igual que la carrera. Un técnico necesita al menos 40 trabajos y 5 encuestas en el periodo para clasificar; los demás están en la lista desplegable debajo de la clasificación. Las filas resaltadas son técnicos de este equipo. Seleccione el título de una columna para ordenar por ella.',
     'Top tech': 'Mejor técnico', 'Race leader': 'Líder de la carrera', 'Show': 'Mostrar', 'Hide': 'Ocultar',
     'QC observations by other observers': 'Observaciones de QC hechas por otros observadores', 'QCs by tech': 'QC por técnico',
     'Select a tech to see only theirs.': 'Selecciona un técnico para ver solo los suyos.', 'All QCs': 'Todos los QC',
@@ -2165,7 +2213,9 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     'Rank': 'Plas', 'Supervisor': 'Sipèvizè', 'Our team': 'Ekip nou', 'Techs ranked': 'Teknisyen ki klase', 'Market leader': 'Lidè mache a',
     'Our best rank': 'Pi bon plas nou', 'Our techs in the top 10': 'Teknisyen nou yo nan top 10', 'No market data yet.': 'Poko gen done sou mache a.',
     'Not ranked yet: under 40 jobs or 5 surveys in this timeframe': 'Poko klase: mwens pase 40 travay oswa 5 sondaj nan peryòd sa a',
-    'Score: 60% FTR, 30% tNPS and 10% tool usage, the same as the race. A tech needs at least 40 jobs and 5 surveys in the timeframe to be ranked; the rest are listed below the ranking. Highlighted rows are techs on this team. Select a column heading to sort by it.': 'Pwen: 60% FTR, 30% tNPS ak 10% itilizasyon zouti, menm jan ak kous la. Yon teknisyen bezwen omwen 40 travay ak 5 sondaj nan peryòd la pou l klase; lòt yo parèt anba klasman an. Liy ki an koulè yo se teknisyen ekip sa a. Chwazi tit yon kolòn pou ranje lis la dapre li.',
+    'Not ranked: no FTR or tool usage results in this timeframe': 'Pa klase: pa gen rezilta FTR oswa itilizasyon zouti nan peryòd sa a',
+    'Score: 60% FTR, 30% tNPS and 10% tool usage. So a small sample can\'t jump to the top, the score blends each tech\'s FTR and tNPS with the market average: FTR as if they had 20 more jobs at the market rate, tNPS as if they had 5 more surveys at the market rate. The blend fades as jobs and surveys add up. The FTR and tNPS columns show each tech\'s real numbers. Highlighted rows are techs on this team. Select a column heading to sort by it.': 'Pwen: 60% FTR, 30% tNPS ak 10% itilizasyon zouti. Pou yon ti echantiyon pa monte tou dwat an tèt, pwen an melanje FTR ak tNPS chak teknisyen ak mwayèn mache a: FTR la tankou si li te gen 20 travay anplis nan nivo mache a, tNPS la tankou si li te gen 5 sondaj anplis nan nivo mache a. Efè a vin pi piti pandan travay ak sondaj yo ap ogmante. Kolòn FTR ak tNPS yo montre vrè chif chak teknisyen. Liy ki an koulè yo se teknisyen ekip sa a. Chwazi tit yon kolòn pou ranje lis la dapre li.',
+    'Score: 60% FTR, 30% tNPS and 10% tool usage, the same as the race. A tech needs at least 40 jobs and 5 surveys in the timeframe to be ranked; the rest are in the drop-down below the ranking. Highlighted rows are techs on this team. Select a column heading to sort by it.': 'Pwen: 60% FTR, 30% tNPS ak 10% itilizasyon zouti, menm jan ak kous la. Yon teknisyen bezwen omwen 40 travay ak 5 sondaj nan peryòd la pou l klase; lòt yo nan lis ki ka louvri anba klasman an. Liy ki an koulè yo se teknisyen ekip sa a. Chwazi tit yon kolòn pou ranje lis la dapre li.',
     'Top tech': 'Pi bon teknisyen', 'Race leader': 'Premye nan kous la', 'Show': 'Montre', 'Hide': 'Kache',
     'No tech met all three targets with at least 40 jobs over the last 30 days.': 'Pa gen teknisyen ki rive nan twa objektif yo ak omwen 40 travay nan 30 dènye jou yo.',
     'Lines mark where a new fiscal month starts. A week that crosses the 22nd goes with the month that has most of its days.': 'Liy yo montre kote yon nouvo mwa fiskal kòmanse. Yon semèn ki travèse 22 a ale ak mwa ki gen plis nan jou li yo.',
