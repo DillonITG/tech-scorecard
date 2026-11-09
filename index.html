@@ -1617,6 +1617,19 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       ? (c.best_ftr ? `Congratulations! Met every target over the last 30 days with the team’s best first-time-fix rate, ${SC.pct(c.ftr)} on ${c.jobs} jobs.` : `Congratulations! Met every target over the last 30 days, with ${SC.pct(c.ftr)} first-time fixes on ${c.jobs} jobs.`)
       : 'No tech met all three targets with at least 40 jobs over the last 30 days.';
   });
+  /* Top tech stats count up from 0 once, on a shared clock, so a redraw mid-count keeps counting (Dillon, Nov 8). */
+  SC.champCount = { state: SC.still ? 'done' : 'idle', t0: 0, dur: 1400 };
+  SC.champE = () => { const k = SC.champCount; if (k.state === 'done') return 1; if (k.state !== 'run') return 0; const q = Math.max(0, Math.min(1, (performance.now() - k.t0) / k.dur)); return 1 - Math.pow(1 - q, 3); };
+  SC.champStart = (card) => {
+    const k = SC.champCount; if (k.state !== 'idle') return; k.state = 'wait';
+    const go = () => { k.state = 'run'; k.t0 = performance.now();
+      const tick = () => { const e = SC.champE(); for (const v of document.querySelectorAll('.sc-champ-stat .v')) if (v._fmt && v._raw != null && !isNaN(v._raw)) v.textContent = v._fmt(v._raw * e);
+        if (performance.now() - k.t0 < k.dur) requestAnimationFrame(tick); else { k.state = 'done'; for (const v of document.querySelectorAll('.sc-champ-stat .v')) if (v._fmt && v._raw != null) v.textContent = v._fmt(v._raw); } };
+      requestAnimationFrame(tick); };
+    if (!('IntersectionObserver' in window)) { go(); return; }
+    const io = new IntersectionObserver((ents) => { if (ents.some((x) => x.isIntersecting)) { io.disconnect(); go(); } }, { threshold: 0.3 });
+    io.observe(card);
+  };
   dash.draw('champstats', (el) => {
     el.replaceChildren();
     const c = champ(); if (!c || !c.tech_id) return;
@@ -1629,15 +1642,15 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       ['Repeat rate', SC.pct(c.repeat), 'Team ' + SC.pct(c.team_repeat), c.repeat < c.team_repeat, c.repeat, SC.pct],
       ['Appointments met', SC.pct(c.met), 'Team ' + SC.pct(c.team_met), c.met > c.team_met, c.met, SC.pct]
     ];
-    const first = !SC.champCounted; SC.champCounted = true;
     for (const [k, v, cap, good, raw, fmt] of stats) {
       const d = document.createElement('div'); d.className = 'sc-champ-stat';
       const a = document.createElement('span'); a.className = 'k'; a.textContent = k;
       const b = document.createElement('span'); b.className = 'v'; b.textContent = v;
-      if (first) SC.countUp(b, raw, fmt);
+      b._raw = raw; b._fmt = fmt; if (raw != null && !isNaN(raw)) b.textContent = fmt(raw * SC.champE());
       const e = document.createElement('span'); e.className = 'c' + (good ? ' good' : ''); e.textContent = cap;
       d.append(a, b, e); el.appendChild(d);
     }
+    SC.champStart(el);
   });
   /* Race for first place: top 3 by race score over the last 3 fiscal months. */
   dash.calc('race', {
