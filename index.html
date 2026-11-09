@@ -360,6 +360,98 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   .sc-champ-badge .sc-av { width: 100%; height: 100%; border: 0; }
   .sc-champ-badge .tro { position: absolute; right: -6px; bottom: -6px; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--gold); color: #1a212c; border: 2px solid var(--color-panel); }
   .sc-champ-badge .tro svg { width: 16px; height: 16px; }
+
+  /* ---- Fun pass (Dillon, Nov 8): every animation is a CSS animation, so it replays whenever a tab is shown. ---- */
+  @keyframes sc-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @keyframes sc-slide { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
+  .sc-table:not(.sc-qc-table) tbody tr { animation: sc-rise .38s ease-out both; }
+  .sc-table:not(.sc-qc-table) tbody tr:nth-child(n+17) { animation-delay: 525ms; }
+  .sc-fb-list > .sc-quote { animation: sc-slide .4s ease-out both; }
+  .sc-fb-list > .sc-quote:nth-child(n+17) { animation-delay: 525ms; }
+  .sc-table:not(.sc-qc-table) tbody tr:nth-child(2), .sc-fb-list > .sc-quote:nth-child(2) { animation-delay: 35ms; }
+  .sc-table:not(.sc-qc-table) tbody tr:nth-child(3), .sc-fb-list > .sc-quote:nth-child(3) { animation-delay: 70ms; }
+  .sc-table:not(.sc-qc-table) tbody tr:nth-child(4), .sc-fb-list > .sc-quote:nth-child(4) { animation-delay: 105ms; }
+  .sc-table:not(.sc-qc-table) tbody tr:nth-child(5), .sc-fb-list > .sc-quote:nth-child(5) { animation-delay: 140ms; }
+  .sc-table:not(.sc-qc-table) tbody tr:nth-child(6), .sc-fb-list > .sc-quote:nth-child(6) { animation-delay: 175ms; }
+  .sc-table:not(.sc-qc-table) tbody tr:nth-child(7), .sc-fb-list > .sc-quote:nth-child(7) { animation-delay: 210ms; }
+  .sc-table:not(.sc-qc-table) tbody tr:nth-child(8), .sc-fb-list > .sc-quote:nth-child(8) { animation-delay: 245ms; }
+  .sc-table:not(.sc-qc-table) tbody tr:nth-child(9), .sc-fb-list > .sc-quote:nth-child(9) { animation-delay: 280ms; }
+  .sc-table:not(.sc-qc-table) tbody tr:nth-child(10), .sc-fb-list > .sc-quote:nth-child(10) { animation-delay: 315ms; }
+  .sc-table:not(.sc-qc-table) tbody tr:nth-child(11), .sc-fb-list > .sc-quote:nth-child(11) { animation-delay: 350ms; }
+  .sc-table:not(.sc-qc-table) tbody tr:nth-child(12), .sc-fb-list > .sc-quote:nth-child(12) { animation-delay: 385ms; }
+  .sc-table:not(.sc-qc-table) tbody tr:nth-child(13), .sc-fb-list > .sc-quote:nth-child(13) { animation-delay: 420ms; }
+  .sc-table:not(.sc-qc-table) tbody tr:nth-child(14), .sc-fb-list > .sc-quote:nth-child(14) { animation-delay: 455ms; }
+  .sc-table:not(.sc-qc-table) tbody tr:nth-child(15), .sc-fb-list > .sc-quote:nth-child(15) { animation-delay: 490ms; }
+  .sc-table:not(.sc-qc-table) tbody tr:nth-child(16), .sc-fb-list > .sc-quote:nth-child(16) { animation-delay: 525ms; }
+  /* Charts trace themselves in; dots and labels follow. */
+  .sc-ln { stroke-dasharray: 1; animation: sc-ln 1s ease-out both; }
+  @keyframes sc-ln { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+  .sc-dotin { animation: sc-fade .35s ease-out .75s both; }
+  @keyframes sc-fade { from { opacity: 0; } to { opacity: 1; } }
+  /* Tech detail bars fill from empty. */
+  .sc-fill { transform-box: fill-box; transform-origin: left center; animation: sc-fillx .9s cubic-bezier(.25,.8,.25,1) both; }
+  @keyframes sc-fillx { from { transform: scaleX(0); } to { transform: none; } }
+  /* Weekly heatmap fills in week by week. */
+  .sc-heat td { animation: sc-cell .35s ease-out both; animation-delay: calc(var(--c, 0) * 70ms + 80ms); }
+  @keyframes sc-cell { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: none; } }
+  .sc-streak { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 999px; font-size: 11px; font-weight: 700; color: #b35a00; background: color-mix(in srgb, #ff9f1a 22%, transparent); vertical-align: 1px; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .sc-streak { color: #ffb347; } }
+  :root[data-theme="dark"] .sc-streak { color: #ffb347; }
+  /* Fixes-to-target ring. */
+  .sc-ring { display: inline-block; width: 18px; height: 18px; margin-right: 6px; vertical-align: -4px; }
+  .sc-ring circle { fill: none; stroke-width: 3.5; }
+  .sc-ring .bg { stroke: var(--cds-chart-grid); } .sc-ring .fg { stroke: var(--color-bad); stroke-linecap: round; transform: rotate(-90deg); transform-origin: center; animation: sc-ringin .9s ease-out .2s both; }
+  @keyframes sc-ringin { from { stroke-dashoffset: 1; } }
+  /* On-target confetti pop in Tech detail. */
+  .sc-pop { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 5; }
+  .sc-pop i { position: absolute; width: 7px; height: 4px; border-radius: 1px; left: var(--x); top: -8px; animation: sc-popfall var(--d) cubic-bezier(.2,.6,.4,1) var(--w) both; }
+  @keyframes sc-popfall { 0% { transform: translate(0, 0) rotate(0); opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) rotate(var(--r)); opacity: 0; } }
+  /* Badges. */
+  .sc-bdg { display: inline-block; margin-left: 4px; font-size: 13px; line-height: 1; vertical-align: 1px; cursor: default; }
+  .sc-badges { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .sc-badges:empty { display: none; }
+  .sc-badges .lbl { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-right: 2px; }
+  .sc-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: var(--cds-font-size-caption); font-weight: 600; border: 1px solid color-mix(in srgb, #e8b931 55%, var(--color-border-line)); background: color-mix(in srgb, #e8b931 12%, var(--color-panel)); animation: sc-rise .4s ease-out both; }
+  .sc-badge:nth-child(3) { animation-delay: .08s; } .sc-badge:nth-child(4) { animation-delay: .16s; } .sc-badge:nth-child(5) { animation-delay: .24s; }
+  /* Feedback: gauge + comment of the week. */
+  .sc-fb-hero { display: grid; gap: var(--cds-gap-sm); grid-template-columns: minmax(240px, 1fr) 2fr; }
+  @media (max-width: 44rem) { .sc-fb-hero { grid-template-columns: 1fr; } }
+  .sc-gauge { display: grid; justify-items: center; gap: 2px; }
+  .sc-gauge svg { width: min(260px, 100%); height: auto; overflow: visible; }
+  .sc-gauge .needle { transform-origin: 100px 100px; animation: sc-needle 1.4s cubic-bezier(.3,1.4,.5,1) .15s both; transform: rotate(var(--a)); }
+  @keyframes sc-needle { from { transform: rotate(-90deg); } to { transform: rotate(var(--a)); } }
+  .sc-gauge .val { font-family: var(--font-anthropic-serif); font-size: calc(var(--cds-font-size-title) * 1.1); line-height: 1; }
+  .sc-gauge .cap { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .sc-cotw { display: grid; gap: 10px; align-content: start; }
+  .sc-cotw .head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .sc-cotw .who { display: flex; align-items: center; gap: 10px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .sc-cotw .who b { color: var(--color-fg); }
+  .sc-cotw blockquote { margin: 0; font-family: var(--font-anthropic-serif); font-size: calc(var(--cds-font-size-body) * 1.25); line-height: 1.4; min-height: 3.6em; transition: opacity .4s; }
+  .sc-cotw blockquote.out { opacity: 0; }
+  .sc-cotw .dots { display: flex; gap: 6px; } .sc-cotw .dots button { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 50%; background: var(--cds-chart-grid); cursor: pointer; } .sc-cotw .dots button[aria-current="true"] { background: #e8b931; }
+  .sc-quote.ten { position: relative; border-left-color: #e8b931; }
+  .sc-quote.ten::after { content: "✨"; position: absolute; top: 6px; right: 8px; font-size: 14px; animation: sc-twinkle 2.4s ease-in-out infinite; }
+  .sc-quote.ten .meta { padding-right: 22px; }
+  @keyframes sc-twinkle { 0%, 100% { opacity: .35; transform: scale(.85); } 50% { opacity: 1; transform: scale(1.1); } }
+  /* Market leaders: podium, rank arrows, our-team glow. */
+  .sc-podium { display: grid; grid-template-columns: repeat(3, minmax(0, 200px)); justify-content: center; align-items: end; gap: 12px; padding-top: 6px; }
+  .sc-pod { display: grid; justify-items: center; gap: 6px; text-align: center; }
+  .sc-pod .who { display: grid; justify-items: center; gap: 4px; animation: sc-rise .45s ease-out both; animation-delay: calc(var(--k) * 150ms + 650ms); }
+  .sc-pod .who b { font-size: var(--cds-font-size-body); } .sc-pod .who span { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .sc-pod .blk { width: 100%; border-radius: 10px 10px 4px 4px; display: grid; place-items: start center; padding-top: 10px; font-size: 26px; transform-origin: bottom; animation: sc-podup .7s cubic-bezier(.25,.9,.3,1.15) both; animation-delay: calc(var(--k) * 150ms + 100ms); border: 1px solid var(--color-border-line); }
+  .sc-pod.p1 .blk { height: 110px; background: linear-gradient(180deg, color-mix(in srgb, #e8b931 40%, var(--color-panel)), var(--color-panel)); border-color: color-mix(in srgb, #e8b931 60%, var(--color-border-line)); }
+  .sc-pod.p2 .blk { height: 80px; background: linear-gradient(180deg, color-mix(in srgb, #b8c0cc 35%, var(--color-panel)), var(--color-panel)); }
+  .sc-pod.p3 .blk { height: 60px; background: linear-gradient(180deg, color-mix(in srgb, #cd7f32 35%, var(--color-panel)), var(--color-panel)); }
+  .sc-pod.p1 .sc-av { box-shadow: 0 0 0 3px #e8b931, 0 0 18px color-mix(in srgb, #e8b931 50%, transparent); }
+  @keyframes sc-podup { from { transform: scaleY(0); opacity: 0; } to { transform: none; opacity: 1; } }
+  .sc-mv { display: inline-block; margin-left: 6px; font-size: 11px; font-weight: 700; }
+  .sc-mv.up { color: var(--color-ok); } .sc-mv.down { color: var(--color-bad); } .sc-mv.new { color: var(--color-fg-muted); font-weight: 600; }
+  .sc-mk-table tr.ours td { animation: sc-rise .38s ease-out both, sc-ourglow 1.8s ease-in-out .6s 1; }
+  @keyframes sc-ourglow { 50% { background: color-mix(in srgb, #e8b931 38%, transparent); } }
+  @media (prefers-reduced-motion: reduce) {
+    .sc-table tbody tr, .sc-fb-list > .sc-quote, .sc-ln, .sc-dotin, .sc-fill, .sc-heat td, .sc-ring .fg, .sc-badge, .sc-gauge .needle, .sc-pod .who, .sc-pod .blk, .sc-mk-table tr.ours td, .sc-quote.ten::after { animation: none !important; }
+    .sc-pop { display: none; }
+  }
   /* Tab switch: a quick fade and lift (Dillon, Nov 8). */
   @keyframes sc-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
   .sc-page.sc-enter { animation: sc-enter .26s ease-out; }
@@ -668,6 +760,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       <div class="sc-facts" data-draw="facts" data-source="tech_table team_now tech_periods"></div>
       <p class="sc-needs" data-draw="needs" data-source="tech_table">—</p>
       <p class="sc-needs" data-draw="needsnps" data-source="tech_table"></p>
+      <div class="sc-badges" data-draw="badges" data-source="tech_table feedback"></div>
       <div class="sc-legend"><span><i data-draw="swatch" data-which="tech"></i>Selected tech</span><span><i data-draw="swatch" data-which="team"></i>Team</span><span><i class="dash"></i>Target</span><span><i class="mark"></i>Coaching note</span></div>
       <div class="sc-detail-grid">
         <div><h4>FTR</h4><div class="sc-chart sm" data-draw="detail" data-kpi="ftr" data-source="tech_periods team_by_period coaching"></div></div>
@@ -718,6 +811,10 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       <p class="sc-note" data-draw="fbnote" data-source="feedback">—</p>
     </div>
     <div class="sc-fb-sum" data-draw="fbsum" data-source="feedback"></div>
+    <div class="sc-fb-hero">
+      <article class="sc-card sc-gauge" data-draw="fbgauge" data-source="feedback"></article>
+      <article class="sc-card sc-cotw" data-draw="cotw" data-source="feedback"></article>
+    </div>
     <div class="sc-grid">
       <article class="sc-card">
         <h3 class="small">Surveys by tech</h3>
@@ -786,6 +883,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       <p class="sc-note" data-draw="mknote" data-source="market">—</p>
     </div>
     <div class="sc-mk-sum" data-draw="mksum" data-source="market tech_table"></div>
+    <div class="sc-podium" data-draw="mkpodium" data-source="market tech_table"></div>
     <article class="sc-card">
       <div class="sc-legend"><span>Job mix:</span><span><i class="box" data-draw="mixkey" data-which="0"></i>Installs</span><span><i class="box" data-draw="mixkey" data-which="1"></i>Trouble calls</span><span><i class="box" data-draw="mixkey" data-which="2"></i>SROs</span></div>
       <div class="sc-tablebox" style="max-height:none">
@@ -1157,15 +1255,15 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     series.forEach((s) => {
       const isMain = s === main;
       const pts = labels.map((l, i) => ({ l, i, v: s.values[i] }));
-      g.append('path').datum(pts).attr('d', lineGen).attr('fill', 'none').attr('stroke', s.color).attr('stroke-width', s.width || 2.25).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round');
-      g.selectAll(null).data(pts.filter((p) => ok(p.v))).join('circle').attr('cx', (d) => x(d.l)).attr('cy', (d) => y(d.v)).attr('r', s.dot || 3.5)
+      g.append('path').datum(pts).attr('d', lineGen).attr('class', 'sc-ln').attr('pathLength', 1).attr('fill', 'none').attr('stroke', s.color).attr('stroke-width', s.width || 2.25).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round');
+      g.selectAll(null).data(pts.filter((p) => ok(p.v))).join('circle').attr('class', 'sc-dotin').attr('cx', (d) => x(d.l)).attr('cy', (d) => y(d.v)).attr('r', s.dot || 3.5)
         .attr('fill', (d) => isMain && isBad(d.v, d.i, s) ? 'var(--cds-chart-status-critical)' : s.color);
     });
     /* Latest value of the main line, labeled above its last point (red when it misses). */
     { let li = labels.length - 1; while (li >= 0 && !ok(main.values[li])) li--;
       if (li >= 0) {
         const v = main.values[li], bad = isBad(v, li, main);
-        g.append('text').attr('x', Math.min(x(labels[li]) + 6, W - 2)).attr('y', Math.max(y(v) - 9, 11)).attr('text-anchor', 'end').attr('font-size', 11).attr('font-weight', 600)
+        g.append('text').attr('class', 'sc-dotin').attr('x', Math.min(x(labels[li]) + 6, W - 2)).attr('y', Math.max(y(v) - 9, 11)).attr('text-anchor', 'end').attr('font-size', 11).attr('font-weight', 600)
           .attr('fill', bad ? 'var(--cds-chart-status-critical)' : 'var(--color-fg)').attr('paint-order', 'stroke').attr('stroke', 'var(--color-panel)').attr('stroke-width', 3).attr('stroke-linejoin', 'round')
           .text(window.SC.pct(v));
       } }
@@ -1334,7 +1432,9 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     const li = vals.length - 1;
     if (vals[li] != null) svg.append('circle').attr('cx', x(li)).attr('cy', y(vals[li])).attr('r', 2.5).attr('fill', vals[li] < SC.T.ftr ? 'var(--cds-chart-status-critical)' : dash.colors[0]);
   };
-  const pickTech = (id) => { SC.picked = id; dash.draw('techrows'); dash.draw('techpick'); dash.draw('pickav'); dash.draw('detail'); dash.draw('facts'); dash.draw('needs'); dash.draw('needsnps'); dash.draw('notes'); window.SC.notesEmpty(); };
+  const pickTech = (id) => { SC.picked = id; dash.draw('techrows'); dash.draw('techpick'); dash.draw('pickav'); dash.draw('detail'); dash.draw('facts'); dash.draw('needs'); dash.draw('needsnps'); dash.draw('badges'); dash.draw('notes'); window.SC.notesEmpty();
+    const t = dash.data('tech_table'), r = t.status === 'ok' ? t.data.find((x) => x.tech_id === id) : null;
+    if (r && !r.away && r.misses === 0) { const f = document.querySelector('[data-draw="facts"]'); SC.pop(f && f.parentElement); } };
   const defaultPick = (rows) => rows.filter((r) => !r.away).sort((a, b) => b.misses - a.misses || a.ftr - b.ftr)[0]?.tech_id || null;
 
   /* The tech table over the last K fiscal months: each tech's counts added up, rates and target misses worked out from the totals. */
@@ -1352,6 +1452,29 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     });
   };
   dash.draw('tabletitle', (el) => { const K = SC.tspan || 1; el.textContent = K > 1 ? 'Techs, last ' + K + ' months' : 'Techs this fiscal month'; });
+  /* Badges earned this fiscal month (Dillon, Nov 8): worked out from the data on every refresh. */
+  SC.badges = (id) => {
+    const t = dash.data('tech_table'); if (t.status !== 'ok') return [];
+    const rows = t.data.filter((r) => !r.away), r = rows.find((x) => x.tech_id === id); if (!r) return [];
+    const out = [];
+    if (r.tu === 100 && r.jobs >= 20) out.push(['🔧', 'Perfect tool usage']);
+    const fb = dash.data('feedback');
+    if (fb.status === 'ok') { const mine = fb.data.filter((x) => String(x.tech_id) === String(id) && x.score !== '' && x.score != null).sort((a, b) => a.date < b.date ? 1 : -1);
+      if (mine.length >= 5 && mine.slice(0, 5).every((x) => +x.score >= 9)) out.push(['⭐', '5 promoters in a row']); }
+    if (r.repeat === 0 && r.jobs * (r.tc_share || 0) / 100 >= 10) out.push(['🛡️', 'Zero repeats']);
+    const imp = rows.filter((x) => x.ftr_change > 0 && x.ftr_jobs >= 20).sort((a, b) => b.ftr_change - a.ftr_change)[0];
+    if (imp && imp.tech_id === id) out.push(['📈', 'Most improved FTR']);
+    return out;
+  };
+  /* A quick confetti pop over an element (used when picking a tech who is on all three targets). */
+  SC.pop = (host) => {
+    if (SC.still || !host) return; if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
+    const box = document.createElement('div'); box.className = 'sc-pop'; const cols = ['#e8b931', '#4a86e8', '#e06c75', '#43b581'];
+    for (let i = 0; i < 40; i++) { const c = document.createElement('i'); c.style.background = cols[i % 4]; c.style.setProperty('--x', (5 + Math.random() * 90) + '%');
+      c.style.setProperty('--dx', ((Math.random() - .5) * 80) + 'px'); c.style.setProperty('--dy', (140 + Math.random() * 220) + 'px'); c.style.setProperty('--r', ((Math.random() - .5) * 720) + 'deg');
+      c.style.setProperty('--d', (1 + Math.random() * .8).toFixed(2) + 's'); c.style.setProperty('--w', (Math.random() * .25).toFixed(2) + 's'); box.appendChild(c); }
+    host.appendChild(box); setTimeout(() => box.remove(), 2400);
+  };
   dash.draw('techrows', (tbody) => {
     const d0 = dash.data('tech_table');
     tbody.replaceChildren();
@@ -1383,7 +1506,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       if (r.away) tr.title = 'Last jobs in ' + r.last_label + '; numbers shown are from then.';
       tr.dataset.key = r.tech_id; tr.tabIndex = 0;
       const td = (text, cls) => { const c = document.createElement('td'); if (cls) c.className = cls; if (text != null) c.textContent = text; tr.appendChild(c); return c; };
-      { const c = td(null, 'tech'), w = document.createElement('span'); w.className = 'tw'; w.append(SC.av(r.tech_id, 30), document.createTextNode(r.tech_id)); c.appendChild(w); }
+      { const c = td(null, 'tech'), w = document.createElement('span'); w.className = 'tw'; w.append(SC.av(r.tech_id, 30), document.createTextNode(r.tech_id)); c.appendChild(w);
+        for (const [e, t] of SC.badges(r.tech_id)) { const b = document.createElement('span'); b.className = 'sc-bdg'; b.textContent = e; b.title = t; w.appendChild(b); } }
       const st = td(null, 'l'); const p = document.createElement('span'); p.className = 'sc-pill ' + (r.away ? '' : r.misses === 0 ? 'ok' : r.misses === 1 ? 'warn' : 'bad'); p.textContent = r.status; st.appendChild(p);
       td(r.away ? '—' : d3.format(',')(r.jobs), 'hide-sm');
       const mc = td(null, 'hide-sm'); const bar = document.createElement('div'); bar.className = 'sc-mix'; bar.title = r.mix;
@@ -1397,7 +1521,10 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       { const c = td(r.tnps_needed > 0 ? String(r.tnps_needed) : '—', 'hide-sm' + (r.tnps_needed > 0 ? ' miss' : '')); if (r.tnps_needed == null && !r.away) c.title = r.tnps_surveys === 0 ? 'No surveys yet this month' : 'Shown for the current month only'; }
       trend(td(SC.pct(r.ftr), r.ftr_miss ? 'miss' : ''), r.ftr, pc && pc.ftr, 'ftr');
       { const c = td(r.ftr_fails == null ? '—' : String(r.ftr_fails), 'hide-sm' + (r.ftr_fails > 0 ? ' miss' : '')); if (r.ftr_fails == null && !r.away) c.title = 'Shown for the current month only'; }
-      { const c = td(r.ftr_needed > 0 ? String(r.ftr_needed) : '—', 'hide-sm' + (r.ftr_needed > 0 ? ' miss' : '')); if (r.ftr_needed == null) c.title = 'Shown for the current month only'; }
+      { const c = td(r.ftr_needed > 0 ? String(r.ftr_needed) : '—', 'hide-sm' + (r.ftr_needed > 0 ? ' miss' : '')); if (r.ftr_needed == null) c.title = 'Shown for the current month only';
+        if (r.ftr_needed > 0 && r.ftr != null) { const q = Math.max(0.03, Math.min(1, (r.ftr - 80) / (SC.T.ftr - 80))); /* ring runs from 80% FTR to the target */ const NS = 'http://www.w3.org/2000/svg', sv = document.createElementNS(NS, 'svg'); sv.setAttribute('class', 'sc-ring'); sv.setAttribute('viewBox', '0 0 20 20');
+          sv.innerHTML = '<circle class="bg" cx="10" cy="10" r="7.5"/><circle class="fg" cx="10" cy="10" r="7.5" pathLength="1" stroke-dasharray="' + q.toFixed(3) + ' 1"/>';
+          const tt = document.createElementNS(NS, 'title'); tt.textContent = 'FTR ' + SC.pct(r.ftr) + ', target ' + SC.tgt(SC.T.ftr); sv.appendChild(tt); c.prepend(sv); } }
       trend(td(SC.pct(r.repeat), 'grp hide-sm'), r.repeat, pc && pc.repeat, 'repeat');
       trend(td(SC.pct(r.rework), 'hide-sm'), r.rework, pc && pc.rework, 'rework');
       trend(td(SC.pct(r.pht), 'hide-sm'), r.pht, pc && pc.pht, 'pht');
@@ -1506,7 +1633,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       const W = 200, svg = svgEl('svg', { viewBox: `0 0 ${W} 26`, preserveAspectRatio: 'none', 'aria-hidden': 'true' }, d);
       const x = (n) => Math.max(0, Math.min(W, (n - lo) / (hi - lo) * W));
       svgEl('rect', { x: 0, y: 11, width: W, height: 9, rx: 4.5, fill: 'var(--cds-chart-grid)' }, svg);
-      if (v != null) svgEl('rect', { x: 0, y: 11, width: Math.max(4, x(v)), height: 9, rx: 4.5, fill: bad ? BAD : C }, svg);
+      if (v != null) svgEl('rect', { x: 0, y: 11, width: Math.max(4, x(v)), height: 9, rx: 4.5, fill: bad ? BAD : C, class: 'sc-fill' }, svg);
       if (target != null) svgEl('line', { x1: x(target), x2: x(target), y1: 7, y2: 24, stroke: 'var(--cds-chart-reference)', 'stroke-width': 2, 'stroke-dasharray': '3 2', 'vector-effect': 'non-scaling-stroke' }, svg);
       if (team != null) svgEl('path', { d: `M${x(team) - 5},1 L${x(team) + 5},1 L${x(team)},9 Z`, fill: 'var(--color-fg-muted)' }, svg);
     };
@@ -1713,6 +1840,11 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       }
     }
   }
+  dash.draw('badges', (el) => {
+    el.replaceChildren(); const b = SC.picked ? SC.badges(SC.picked) : []; if (!b.length) return;
+    const l = document.createElement('span'); l.className = 'lbl'; l.textContent = 'Badges this month:'; el.appendChild(l);
+    for (const [e, t] of b) { const c = document.createElement('span'); c.className = 'sc-badge'; const i = document.createElement('span'); i.textContent = e; i.setAttribute('aria-hidden', 'true'); const w = document.createElement('span'); w.textContent = t; c.append(i, w); el.appendChild(c); }
+  });
   dash.draw('champno1', (el) => { const c = champ(); el.classList.toggle('off', !(c && c.tech_id)); });
   dash.draw('pickav', (el) => { el.replaceChildren(SC.picked ? SC.av(SC.picked, 40) : ''); });
   dash.draw('spotchamp', (el) => { const c = champ(); withName(el, c && c.tech_id, c ? 'No winner this period' : '—'); if (c && c.tech_id) el.prepend(SC.av(c.tech_id, 22)); });
@@ -1803,8 +1935,14 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     const addRow = (name, getter, isTeam) => {
       const tr = document.createElement('tr'); if (isTeam) tr.className = 'team';
       const th = document.createElement('th'); th.className = 't'; th.textContent = name; tr.appendChild(th);
+      /* Streak: weeks in a row on target for FTR (and tNPS when there were surveys), newest first; a partial week that isn't there yet doesn't break it. */
+      if (!isTeam) {
+        const ok = (r) => r && r.ftr != null && r.ftr_jobs >= 5 && r.ftr >= SC.T.ftr && (!r.surveys || r.tnps >= SC.T.tnps);
+        let n = 0; for (let i = weeks.length - 1; i >= 0; i--) { const r = getter(weeks[i]); if (ok(r)) n++; else if (i === weeks.length - 1 && /partial/.test(labels[i])) continue; else break; }
+        if (n >= 2) { const b = document.createElement('span'); b.className = 'sc-streak'; b.textContent = '🔥 ' + n; b.title = n + ' weeks in a row on target (FTR and tNPS)'; th.appendChild(b); }
+      }
       weeks.forEach((w, i) => {
-        const r = getter(w); const td = document.createElement('td');
+        const r = getter(w); const td = document.createElement('td'); td.style.setProperty('--c', i);
         const v = r ? r[k] : null;
         td.className = cls(v) + (r && !isTeam && small(r) ? ' low' : '') + (starts.has(i) ? ' fmstart' : '');
         td.textContent = v == null ? '' : d3.format('.0f')(v);
@@ -1893,6 +2031,43 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     const th = FB_THEMES.find((t) => t.id === SC.fb.theme);
     el.textContent = (SC.fb.tech ? 'Surveys for Tech ' + SC.fb.tech : 'All surveys') + (th ? ' · ' + th.label : '');
   });
+  /* tNPS gauge (Dillon, Nov 8): the needle sweeps to the team's tNPS this fiscal month; the dial runs 50 to 100. */
+  dash.draw('fbgauge', (el) => {
+    el.replaceChildren(); const rs = fbRows(); if (!rs || !rs.length) return; const t = tnpsOf(rs); if (t == null) return;
+    const ang = (v) => -90 + (Math.max(50, Math.min(100, v)) - 50) / 50 * 180, pt = (a, r) => [100 + r * Math.sin(a * Math.PI / 180), 100 - r * Math.cos(a * Math.PI / 180)];
+    const arc = (a, b, col) => { const [x1, y1] = pt(ang(a), 80), [x2, y2] = pt(ang(b), 80); return `<path d="M${x1.toFixed(1)} ${y1.toFixed(1)} A80 80 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)}" stroke="${col}" stroke-width="14" fill="none"/>`; };
+    const [tx1, ty1] = pt(ang(SC.T.tnps), 66), [tx2, ty2] = pt(ang(SC.T.tnps), 94);
+    const box = fbEl('div'); box.innerHTML = `<svg viewBox="0 0 200 118" aria-hidden="true">${arc(50, 85, 'var(--color-bad)')}${arc(85, SC.T.tnps, 'var(--color-warn)')}${arc(SC.T.tnps, 100, 'var(--color-ok)')}
+      <line x1="${tx1.toFixed(1)}" y1="${ty1.toFixed(1)}" x2="${tx2.toFixed(1)}" y2="${ty2.toFixed(1)}" stroke="var(--color-fg)" stroke-width="2"/>
+      <text x="14" y="116" font-size="10" fill="var(--color-fg-muted)">50</text><text x="186" y="116" font-size="10" fill="var(--color-fg-muted)" text-anchor="end">100</text>
+      <g class="needle" style="--a:${ang(t).toFixed(1)}deg"><line x1="100" y1="100" x2="100" y2="30" stroke="var(--color-fg)" stroke-width="3" stroke-linecap="round"/></g>
+      <circle cx="100" cy="100" r="7" fill="var(--color-fg)"/></svg>`;
+    el.appendChild(box.firstElementChild);
+    const v = fbEl('div', 'val', t.toFixed(1) + '%'); v.style.color = t >= SC.T.tnps ? 'var(--color-ok)' : t >= 85 ? 'var(--color-warn)' : 'var(--color-bad)';
+    const cap = fbEl('div', 'cap'); cap.append(fbEl('span', null, 'Team tNPS this month'), document.createTextNode(' · '), fbEl('span', null, 'Target ' + SC.tgt(SC.T.tnps))); el.append(v, cap);
+  });
+  /* Comment of the week: the best 10/10 comments from the latest 7 days of surveys, rotating every 7 seconds. */
+  dash.draw('cotw', (el) => {
+    clearInterval(el.__t); el.replaceChildren(); const rs = fbRows(); if (!rs || !rs.length) return;
+    const good = rs.filter((r) => r.score === 10 && r.comment.length >= 25), newest = rs[0].date;
+    const [y, m, d] = newest.split('-').map(Number), from = new Date(Date.UTC(y, m - 1, d - 6)).toISOString().slice(0, 10);
+    let pick = good.filter((r) => r.date >= from); if (!pick.length) pick = good; pick = pick.slice(0, 5); if (!pick.length) { el.hidden = true; return; } el.hidden = false;
+    const head = fbEl('div', 'head'); const h = fbEl('h3', 'small'); h.append(fbEl('span', null, '💬 '), fbEl('span', null, 'Comment of the week')); head.appendChild(h);
+    const dots = fbEl('div', 'dots'); head.appendChild(dots);
+    const q = fbEl('blockquote'); q.lang = 'en'; q.setAttribute('translate', 'no'); q.dataset.noTr = '1';
+    const who = fbEl('div', 'who'); el.append(head, q, who);
+    let i = 0; const show = (k, fade) => {
+      i = (k + pick.length) % pick.length; const r = pick[i];
+      const put = () => { q.textContent = '“' + r.comment.charAt(0).toUpperCase() + r.comment.slice(1) + '”';
+        who.replaceChildren(SC.av(r.tech, 28)); const w = fbEl('span'); w.append(fbEl('b', null, 'Tech ' + r.tech), document.createTextNode((SC.names[r.tech] ? ' ' + SC.names[r.tech] : '') + ' · ' + fbmd(r.date) + ' · 10/10')); who.appendChild(w);
+        [...dots.children].forEach((b, j) => b.setAttribute('aria-current', String(j === i))); q.classList.remove('out'); };
+      if (fade && !SC.still) { q.classList.add('out'); setTimeout(put, 380); } else put();
+    };
+    pick.forEach((_, j) => { const b = fbEl('button'); b.type = 'button'; b.setAttribute('aria-label', 'Comment ' + (j + 1)); b.onclick = () => { show(j, true); restart(); }; dots.appendChild(b); });
+    let paused = false; el.onmouseenter = () => { paused = true; }; el.onmouseleave = () => { paused = false; };
+    const restart = () => { clearInterval(el.__t); if (pick.length > 1 && !SC.still) el.__t = setInterval(() => { if (!paused && el.offsetParent) show(i + 1, true); }, 7000); };
+    show(0, false); restart();
+  });
   dash.draw('fblist', (el) => {
     el.replaceChildren(); if (!fbRows()) return;
     const rs = fbFiltered().filter((r) => r.comment || r.kind !== 'pro' || SC.fb.allRows);
@@ -1903,7 +2078,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     if (!rs.length) { el.appendChild(fbEl('p', 'sc-fb-empty', 'No comments match.')); return; }
     const th = FB_THEMES.find((t) => t.id === SC.fb.theme);
     for (const r of rs) {
-      const card = fbEl('figure', 'sc-quote'); card.style.margin = '0'; card.style.setProperty('--q', fbColor[r.kind]);
+      const card = fbEl('figure', 'sc-quote' + (r.score === 10 ? ' ten' : '')); card.style.margin = '0'; card.style.setProperty('--q', fbColor[r.kind]);
       const meta = fbEl('figcaption', 'meta'); const who = fbEl('span'); who.append(fbEl('b', null, 'Tech ' + r.tech), document.createTextNode(' · ' + fbmd(r.date)));
       meta.append(who, fbEl('span', 'score', r.score + '/10')); card.appendChild(meta);
       const q = fbEl('q'); q.lang = 'en'; q.setAttribute('translate', 'no'); q.dataset.noTr = '1';
@@ -2009,10 +2184,11 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   };
   /* Market leaders: every tech in the Broward or Dade market, ranked by the race score. */
   SC.mk = { market: 'Broward', win: 3 };
-  const mkRows = () => {
+  const mkRows = (off = 0) => {
     const d = dash.data('market'); if (d.status !== 'ok' || !d.data.length) return null;
     const rows = d.data.filter((r) => r.market === SC.mk.market);
-    const ps = [...new Set(d.data.map((r) => r.period_start))].sort(), win = ps.slice(-SC.mk.win);
+    const ps = [...new Set(d.data.map((r) => r.period_start))].sort(), win = off ? ps.slice(-(SC.mk.win + off), -off) : ps.slice(-SC.mk.win);
+    if (!win.length) return null;
     const inWin = rows.filter((r) => win.includes(r.period_start));
     /* Small samples are blended with the market average (Dillon, Nov 8): FTR as if the tech had K.ftr more jobs at the market rate,
        tNPS as if they had K.tnps more surveys at the market rate. Everyone with FTR and tool usage results is ranked. */
@@ -2046,11 +2222,24 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   const mkOurs = () => { const t = dash.data('tech_table'); return new Set(t.status === 'ok' ? t.data.map((r) => String(r.tech_id)) : []); };
   for (const b of document.querySelectorAll('[data-market]')) b.addEventListener('click', () => {
     SC.mk.market = b.dataset.market; document.querySelectorAll('[data-market]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-    ['mktitle', 'mknote', 'mksum', 'mktable', 'mktable2', 'mkrestn'].forEach((n) => dash.draw(n));
+    ['mktitle', 'mknote', 'mksum', 'mkpodium', 'mktable', 'mktable2', 'mkrestn'].forEach((n) => dash.draw(n));
   });
   for (const b of document.querySelectorAll('[data-mkwin]')) b.addEventListener('click', () => {
     SC.mk.win = +b.dataset.mkwin; document.querySelectorAll('[data-mkwin]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-    ['mktitle', 'mknote', 'mksum', 'mktable', 'mktable2', 'mkrestn'].forEach((n) => dash.draw(n));
+    ['mktitle', 'mknote', 'mksum', 'mkpodium', 'mktable', 'mktable2', 'mkrestn'].forEach((n) => dash.draw(n));
+  });
+  /* Podium for the top 3 (Dillon, Nov 8): blocks rise, then the techs appear on top. */
+  dash.draw('mkpodium', (el) => {
+    el.replaceChildren(); const m = mkRows(); if (!m || !m.ranked.length) return;
+    const ours = mkOurs(), medals = ['🥇', '🥈', '🥉'];
+    [1, 0, 2].forEach((ix, k) => { const r = m.ranked[ix]; if (!r) return;
+      const pod = document.createElement('div'); pod.className = 'sc-pod p' + (ix + 1); pod.style.setProperty('--k', ix === 0 ? 2 : ix === 1 ? 1 : 0);
+      const who = document.createElement('div'); who.className = 'who'; who.appendChild(SC.av(r.tech_id, ix === 0 ? 60 : 50));
+      const b = document.createElement('b'); b.textContent = 'Tech ' + r.tech_id;
+      const sc = document.createElement('span'); sc.textContent = d3.format('.1f')(r.score) + ' pts' + (r.sup ? ' · ' + r.sup : '');
+      who.append(b, sc);
+      const blk = document.createElement('div'); blk.className = 'blk'; blk.textContent = medals[ix];
+      pod.append(who, blk); el.appendChild(pod); });
   });
   dash.draw('mktitle', (el) => { el.textContent = SC.mk.market === 'Dade' ? 'Dade market leaders' : 'Broward market leaders'; });
   dash.draw('mknote', (el) => {
@@ -2072,7 +2261,12 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     const medals = ['🥇', '🥈', '🥉'];
     const cell = (tr, cls, text) => { const td = fbEl('td', cls, text); tr.appendChild(td); return td; };
     const tr = fbEl('tr', ours.has(String(r.tech_id)) ? 'ours' : '');
-    if (ranked) cell(tr, 'rk l', (r.rank <= 3 ? medals[r.rank - 1] + ' ' : '') + r.rank);
+    if (ranked) { const rk = cell(tr, 'rk l', (r.rank <= 3 ? medals[r.rank - 1] + ' ' : '') + r.rank);
+      const pr = SC.mk.prev && SC.mk.prev.get(r.tech_id);
+      if (SC.mk.prev) { const mv = document.createElement('span');
+        if (pr == null) { mv.className = 'sc-mv new'; mv.textContent = 'new'; mv.title = 'Not ranked last month'; }
+        else if (pr !== r.rank) { const up = pr > r.rank; mv.className = 'sc-mv ' + (up ? 'up' : 'down'); mv.textContent = (up ? '▲' : '▼') + Math.abs(pr - r.rank); mv.title = (up ? 'Up ' : 'Down ') + Math.abs(pr - r.rank) + ' since last month (was #' + pr + ')'; }
+        if (mv.className) rk.appendChild(mv); } }
     const t = cell(tr, 'l tech', 'Tech ' + r.tech_id);
     if (ours.has(String(r.tech_id))) t.appendChild(fbEl('span', 'chip', 'Our team'));
     cell(tr, 'l sup hide-sm', r.sup);
@@ -2101,6 +2295,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   };
   dash.draw('mktable', (el) => {
     el.replaceChildren(); const m = mkRows(); if (!m) return;
+    /* Rank movement: the same ranking one fiscal month earlier (same timeframe length). */
+    const pm = mkRows(1); SC.mk.prev = pm ? new Map(pm.ranked.map((r) => [r.tech_id, r.rank])) : null;
     const ours = mkOurs();
     mkSorted(m.ranked, { col: 'rank', dir: 'ascending' }).forEach((r) => el.appendChild(mkLine(r, true, ours)));
   });
@@ -2265,6 +2461,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     'Not ranked: no FTR or tool usage results in this timeframe': 'Sin clasificar: sin resultados de FTR o uso de herramienta en este periodo',
     'Score: 60% FTR, 30% tNPS and 10% tool usage. So a small sample can\'t jump to the top, the score blends each tech\'s FTR and tNPS with the market average: FTR as if they had 20 more jobs at the market rate, tNPS as if they had 5 more surveys at the market rate. The blend fades as jobs and surveys add up. The FTR and tNPS columns show each tech\'s real numbers. Highlighted rows are techs on this team. Select a column heading to sort by it.': 'Puntaje: 60% FTR, 30% tNPS y 10% uso de herramienta. Para que una muestra pequeña no suba al primer lugar, el puntaje combina el FTR y el tNPS de cada técnico con el promedio del mercado: el FTR como si tuviera 20 trabajos más al nivel del mercado y el tNPS como si tuviera 5 encuestas más al nivel del mercado. El efecto se reduce a medida que suma trabajos y encuestas. Las columnas FTR y tNPS muestran los números reales de cada técnico. Las filas resaltadas son técnicos de este equipo. Seleccione el título de una columna para ordenar por ella.',
     'Score: 60% FTR, 30% tNPS and 10% tool usage, the same as the race. A tech needs at least 40 jobs and 5 surveys in the timeframe to be ranked; the rest are in the drop-down below the ranking. Highlighted rows are techs on this team. Select a column heading to sort by it.': 'Puntaje: 60% FTR, 30% tNPS y 10% uso de herramienta, igual que la carrera. Un técnico necesita al menos 40 trabajos y 5 encuestas en el periodo para clasificar; los demás están en la lista desplegable debajo de la clasificación. Las filas resaltadas son técnicos de este equipo. Seleccione el título de una columna para ordenar por ella.',
+    'Badges this month:': 'Insignias este mes:', 'Perfect tool usage': 'Uso perfecto de herramienta', '5 promoters in a row': '5 promotores seguidos', 'Zero repeats': 'Cero repeticiones', 'Most improved FTR': 'FTR que más mejoró', 'Comment of the week': 'Comentario de la semana', 'Team tNPS this month': 'tNPS del equipo este mes', 'new': 'nuevo',
     'Top tech': 'Mejor técnico', 'Race leader': 'Líder de la carrera', 'Show': 'Mostrar', 'Hide': 'Ocultar',
     'QC observations by other observers': 'Observaciones de QC hechas por otros observadores', 'QCs by tech': 'QC por técnico',
     'Select a tech to see only theirs.': 'Selecciona un técnico para ver solo los suyos.', 'All QCs': 'Todos los QC',
@@ -2355,6 +2552,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     'Not ranked: no FTR or tool usage results in this timeframe': 'Pa klase: pa gen rezilta FTR oswa itilizasyon zouti nan peryòd sa a',
     'Score: 60% FTR, 30% tNPS and 10% tool usage. So a small sample can\'t jump to the top, the score blends each tech\'s FTR and tNPS with the market average: FTR as if they had 20 more jobs at the market rate, tNPS as if they had 5 more surveys at the market rate. The blend fades as jobs and surveys add up. The FTR and tNPS columns show each tech\'s real numbers. Highlighted rows are techs on this team. Select a column heading to sort by it.': 'Pwen: 60% FTR, 30% tNPS ak 10% itilizasyon zouti. Pou yon ti echantiyon pa monte tou dwat an tèt, pwen an melanje FTR ak tNPS chak teknisyen ak mwayèn mache a: FTR la tankou si li te gen 20 travay anplis nan nivo mache a, tNPS la tankou si li te gen 5 sondaj anplis nan nivo mache a. Efè a vin pi piti pandan travay ak sondaj yo ap ogmante. Kolòn FTR ak tNPS yo montre vrè chif chak teknisyen. Liy ki an koulè yo se teknisyen ekip sa a. Chwazi tit yon kolòn pou ranje lis la dapre li.',
     'Score: 60% FTR, 30% tNPS and 10% tool usage, the same as the race. A tech needs at least 40 jobs and 5 surveys in the timeframe to be ranked; the rest are in the drop-down below the ranking. Highlighted rows are techs on this team. Select a column heading to sort by it.': 'Pwen: 60% FTR, 30% tNPS ak 10% itilizasyon zouti, menm jan ak kous la. Yon teknisyen bezwen omwen 40 travay ak 5 sondaj nan peryòd la pou l klase; lòt yo nan lis ki ka louvri anba klasman an. Liy ki an koulè yo se teknisyen ekip sa a. Chwazi tit yon kolòn pou ranje lis la dapre li.',
+    'Badges this month:': 'Badj mwa sa a:', 'Perfect tool usage': 'Itilizasyon zouti pafè', '5 promoters in a row': '5 pwomotè youn dèyè lòt', 'Zero repeats': 'Zewo repetisyon', 'Most improved FTR': 'FTR ki pi amelyore', 'Comment of the week': 'Kòmantè semèn nan', 'Team tNPS this month': 'tNPS ekip la mwa sa a', 'new': 'nouvo',
     'Top tech': 'Pi bon teknisyen', 'Race leader': 'Premye nan kous la', 'Show': 'Montre', 'Hide': 'Kache',
     'No tech met all three targets with at least 40 jobs over the last 30 days.': 'Pa gen teknisyen ki rive nan twa objektif yo ak omwen 40 travay nan 30 dènye jou yo.',
     'Lines mark where a new fiscal month starts. A week that crosses the 22nd goes with the month that has most of its days.': 'Liy yo montre kote yon nouvo mwa fiskal kòmanse. Yon semèn ki travèse 22 a ale ak mwa ki gen plis nan jou li yo.',
