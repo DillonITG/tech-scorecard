@@ -1248,12 +1248,22 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   /* Count a number up from zero the first time it is drawn (Dillon, Nov 8); later redraws just set it. */
   SC.still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   SC.countUp = (el, v, fmt) => {
+    el._cv = v; el._cf = fmt;
+    if (el.dataset.counted === 'wait') return; /* already waiting to come on screen: just keep the latest value */
     if (v == null || isNaN(v) || SC.still || el.dataset.counted) { el.textContent = fmt(v); el.dataset.counted = '1'; return; }
-    el.dataset.counted = '1'; el.textContent = fmt(0); const t0 = performance.now(), dur = 1100;
-    const step = (n) => { const q = Math.max(0, Math.min(1, (n - t0) / dur)), e = 1 - Math.pow(1 - q, 3); el.textContent = fmt(q < 1 ? v * e : v); if (q < 1) requestAnimationFrame(step); };
-    requestAnimationFrame(step);
+    el.dataset.counted = 'wait'; el.textContent = fmt(0);
+    /* Wait until the number is on screen, so it counts where the viewer can see it. */
+    const go = () => {
+      el.dataset.counted = 'run'; const t0 = performance.now(), dur = 1400;
+      const step = (n) => { const q = Math.max(0, Math.min(1, (n - t0) / dur)), e = 1 - Math.pow(1 - q, 3);
+        el.textContent = el._cf(q < 1 ? el._cv * e : el._cv); if (q < 1) requestAnimationFrame(step); else el.dataset.counted = '1'; };
+      requestAnimationFrame(step);
+    };
+    if (!('IntersectionObserver' in window)) { go(); return; }
+    const io = new IntersectionObserver((ents) => { if (ents.some((x) => x.isIntersecting)) { io.disconnect(); go(); } }, { threshold: 0.6 });
+    io.observe(el);
   };
-  dash.draw('kpi', (el) => { const r = latest(); if (!r) { el.textContent = '—'; return; } SC.countUp(el, r[el.dataset.kpi], SC.pct); });
+  dash.draw('kpi', (el) => { const r = latest(); if (!r) { el.textContent = '—'; return; } if (el.dataset.counted === 'run') { el._cv = r[el.dataset.kpi]; return; } SC.countUp(el, r[el.dataset.kpi], SC.pct); });
   dash.draw('delta', (el) => {
     const r = latest(); const k = el.dataset.kpi;
     el.classList.remove('is-good', 'is-bad');
