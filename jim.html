@@ -108,7 +108,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
 <body>
 <div id="dash-root">
 <div class="snap-bar">
-<p class="snap-stamp">Snapshot of May 22, 2026 to Nov 6, 2026, made Nov 8, 2026. This copy does not update by itself.</p>
+<p class="snap-stamp">Snapshot of May 22, 2026 to Nov 6, 2026, made Nov 9, 2026. This copy does not update by itself.</p>
 <nav class="theme-toggle team-toggle" aria-label="Team"><span class="team-label">Team</span><a href="./">Dillon</a><a href="jim.html" aria-current="page">Jim</a></nav>
 <div class="toggles">
 <div class="theme-toggle lang-toggle" role="group" aria-label="Language / Idioma / Lang">
@@ -545,6 +545,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   .sc-mk-table th button { padding-left: 7px; padding-right: 7px; }
   .sc-mk-table .sc-mix { width: 64px; }
   .sc-mk-table td.kpi { background: color-mix(in srgb, #5b9cf5 11%, transparent); font-weight: 700; font-size: calc(var(--cds-font-size-body) * 1.08); }
+  /* Phones: no animations on the Market leaders tab so the data scrolls smoothly (Dillon, Nov 9). */
+  @media (max-width: 44rem) { #page-market *, #page-market *::before, #page-market *::after { animation: none !important; transition: none !important; } }
   .sc-mk-table td.kpi:not(.miss):not(.dim) { color: var(--color-ok); }
   .sc-mk-table th.kpi { background: color-mix(in srgb, #5b9cf5 16%, var(--color-panel)); color: var(--color-fg); font-weight: 700; }
   @media (max-width: 44rem) { .sc-mk-card { padding-left: 8px; padding-right: 8px; } .sc-mk-table .mkw, .sc-mk-table .sc-mv, .sc-mk-table .chip, .sc-mk-table .sc-low { display: none; } .sc-mk-table td.rk { width: auto; } .sc-mk-table td.tech .nm { max-width: 6.25rem; overflow: hidden; text-overflow: ellipsis; } .sc-mk-table { font-size: var(--cds-font-size-caption); } .sc-mk-table td.kpi { font-size: var(--cds-font-size-caption); } .sc-mk-table th, .sc-mk-table td, .sc-mk-table th button { padding-left: 5px; padding-right: 5px; } }
@@ -1342,25 +1344,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   for (const b of document.querySelectorAll('.sc-tab')) b.addEventListener('click', () => { showPage(b.dataset.page); dash.setLink(b.dataset.page); });
   /* Visit stats (GoatCounter on the public site): count each tab opened as its own view, e.g. /tech-scorecard/#market. */
   for (const b of document.querySelectorAll('.sc-tab')) b.addEventListener('click', () => { try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: location.pathname + '#' + b.dataset.page, title: b.textContent.trim() }); } catch (e) {} });
-  /* On Overview, the first scroll down folds the top tech and race into the slim bar, keeping what's on screen in place. Once per visit to Overview.
-     Only a scroll the viewer makes counts (wheel, touch, keys, scrollbar), not the browser putting a reloaded page back where it was. */
-  { let lastY = window.scrollY, folded = false, userAt = 0;
-    const reset = () => { folded = false; lastY = window.scrollY; };
-    for (const b of document.querySelectorAll('.sc-tab')) b.addEventListener('click', reset);
-    const mark = () => { userAt = Date.now(); };
-    for (const ev of ['wheel', 'touchmove', 'mousedown']) addEventListener(ev, mark, { passive: true });
-    addEventListener('keydown', (e) => { if (['ArrowDown', 'PageDown', 'End', ' ', 'Spacebar'].includes(e.key)) mark(); });
-    window.addEventListener('scroll', () => {
-      const yNow = window.scrollY, down = yNow > lastY; lastY = yNow;
-      if (folded || !down || yNow < 8 || SC.page && SC.page !== 'overview' || Date.now() - userAt > 800) return;
-      const bar = document.getElementById('spot-bar'), spot = document.getElementById('spotlight');
-      if (!bar || !spot || spot.hidden) { folded = true; return; }
-      folded = true;
-      const h = spot.getBoundingClientRect().height;
-      spot.hidden = true; bar.setAttribute('aria-expanded', 'false');
-      const ny = Math.max(0, yNow - h); window.scrollTo(0, ny); lastY = ny;
-    }, { passive: true });
-  }
+  /* The top tech and race no longer fold on scroll (Dillon, Nov 9); the Hide/Show button on the gold bar still folds them. */
   const named = (location.hash || '').slice(1);
   if (['overview', 'techs', 'weekly', 'feedback', 'qc', 'market'].includes(named)) showPage(named);
   if (named) { try { history.scrollRestoration = 'manual'; } catch (e) {} window.scrollTo(0, 0); }
