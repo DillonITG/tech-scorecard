@@ -1,8 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8"><meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="favicon-192.png" sizes="192x192" type="image/png">
@@ -473,6 +472,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   /* Tech avatars: a round photo, or a dashed empty circle until one is added (SC.avatars). */
   .sc-av { display: inline-block; flex: none; width: var(--av, 28px); height: var(--av, 28px); border-radius: 50%; overflow: hidden; vertical-align: middle; background: color-mix(in srgb, var(--color-fg) 7%, transparent); border: 1px solid var(--color-border-line); }
   .sc-av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .sc-av.ini, .sc-pod .who .sc-av.ini { display: inline-grid; place-items: center; background: #2f2b5c; border-color: #2f2b5c; color: #a99cf7; font-weight: 700; font-size: calc(var(--av, 28px) * .36); line-height: 1; letter-spacing: .02em; }
   .sc-av.empty { border-style: dashed; border-color: color-mix(in srgb, var(--color-fg) 28%, transparent); }
   .sc-table td.tech .tw { display: inline-flex; align-items: center; gap: 10px; }
   .sc-lane .whobox { display: flex; align-items: center; gap: 10px; min-width: 0; }
@@ -760,7 +760,6 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       <div class="sc-facts" data-draw="facts" data-source="tech_table team_now tech_periods"></div>
       <p class="sc-needs" data-draw="needs" data-source="tech_table">—</p>
       <p class="sc-needs" data-draw="needsnps" data-source="tech_table"></p>
-      <div class="sc-badges" data-draw="badges" data-source="tech_table feedback"></div>
       <div class="sc-legend"><span><i data-draw="swatch" data-which="tech"></i>Selected tech</span><span><i data-draw="swatch" data-which="team"></i>Team</span><span><i class="dash"></i>Target</span><span><i class="mark"></i>Coaching note</span></div>
       <div class="sc-detail-grid">
         <div><h4>FTR</h4><div class="sc-chart sm" data-draw="detail" data-kpi="ftr" data-source="tech_periods team_by_period coaching"></div></div>
@@ -1432,7 +1431,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     const li = vals.length - 1;
     if (vals[li] != null) svg.append('circle').attr('cx', x(li)).attr('cy', y(vals[li])).attr('r', 2.5).attr('fill', vals[li] < SC.T.ftr ? 'var(--cds-chart-status-critical)' : dash.colors[0]);
   };
-  const pickTech = (id) => { SC.picked = id; dash.draw('techrows'); dash.draw('techpick'); dash.draw('pickav'); dash.draw('detail'); dash.draw('facts'); dash.draw('needs'); dash.draw('needsnps'); dash.draw('badges'); dash.draw('notes'); window.SC.notesEmpty();
+  const pickTech = (id) => { SC.picked = id; dash.draw('techrows'); dash.draw('techpick'); dash.draw('pickav'); dash.draw('detail'); dash.draw('facts'); dash.draw('needs'); dash.draw('needsnps'); dash.draw('notes'); window.SC.notesEmpty();
     const t = dash.data('tech_table'), r = t.status === 'ok' ? t.data.find((x) => x.tech_id === id) : null;
     if (r && !r.away && r.misses === 0) { const f = document.querySelector('[data-draw="facts"]'); SC.pop(f && f.parentElement); } };
   const defaultPick = (rows) => rows.filter((r) => !r.away).sort((a, b) => b.misses - a.misses || a.ftr - b.ftr)[0]?.tech_id || null;
@@ -2229,12 +2228,19 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     ['mktitle', 'mknote', 'mksum', 'mkpodium', 'mktable', 'mktable2', 'mkrestn'].forEach((n) => dash.draw(n));
   });
   /* Podium for the top 3 (Dillon, Nov 8): blocks rise, then the techs appear on top. */
+  /* Initials by tech id (first name + first last name, from Dillon's shift exports and the names he gave). Used on the Market leaders podium when there is no photo. */
+  SC.initials = {"8385": "AG", "8703": "DP", "8767": "FG", "7064": "IV", "8839": "LD", "7444": "RB", "6426": "RD", "I04A": "LP", "I08Y": "MD", "7150": "MC", "I0N1": "RR", "7338": "WS", "7152": "AA", "I0BP": "EQ", "7203": "JP", "7345": "JM", "7126": "JH", "I0PF": "LC", "I0I1": "LR", "8567": "OG", "7044": "VS", "7442": "YM", "I0BQ": "YS", "7268": "AS", "7517": "AS", "I0EE": "CH", "I0FK": "ER", "6301": "GL", "7413": "GP", "7201": "JG", "6435": "JA", "6541": "LC", "6578": "MT", "6007": "RC", "7079": "WB", "6702": "YE", "7653": "DC", "7048": "KV", "I0NR": "MV", "7046": "MS", "7165": "OB", "7836": "RS", "I0QS": "YT", "I419": "CS", "7051": "CW", "7468": "DA", "7829": "EV", "8862": "JC", "7434": "RW", "6544": "YA", "7210": "OC", "I0OY": "YT", "IK18": "YK", "Nov 8": "NN", "19": "55", "2": "20", "0": "--", "7134": "KM", "7302": "AV", "7189": "EJ"};
+  SC.avi = (id, size) => {
+    const s = SC.av(id, size), t = SC.initials[id];
+    if (s.classList.contains('empty') && t) { s.classList.replace('empty', 'ini'); s.textContent = t; }
+    return s;
+  };
   dash.draw('mkpodium', (el) => {
     el.replaceChildren(); const m = mkRows(); if (!m || !m.ranked.length) return;
     const ours = mkOurs(), medals = ['🥇', '🥈', '🥉'];
     [1, 0, 2].forEach((ix, k) => { const r = m.ranked[ix]; if (!r) return;
       const pod = document.createElement('div'); pod.className = 'sc-pod p' + (ix + 1); pod.style.setProperty('--k', ix === 0 ? 2 : ix === 1 ? 1 : 0);
-      const who = document.createElement('div'); who.className = 'who'; who.appendChild(SC.av(r.tech_id, ix === 0 ? 60 : 50));
+      const who = document.createElement('div'); who.className = 'who'; who.appendChild(SC.avi(r.tech_id, ix === 0 ? 60 : 50));
       const b = document.createElement('b'); b.textContent = 'Tech ' + r.tech_id;
       const sc = document.createElement('span'); sc.textContent = d3.format('.1f')(r.score) + ' pts' + (r.sup ? ' · ' + r.sup : '');
       who.append(b, sc);
