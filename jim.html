@@ -534,7 +534,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   .sc-mk-sum .sc-tile .v { font-size: calc(var(--cds-font-size-title) * .8); }
   .sc-mk-table td.rk { font-weight: 700; width: 3.5rem; white-space: nowrap; }
   @media (max-width: 44rem) { #sc-techtable { font-size: var(--cds-font-size-caption); } #sc-techtable th, #sc-techtable td, #sc-techtable th button { padding-left: 5px; padding-right: 5px; } #sc-techtable .sc-av { --av: 24px !important; } #sc-techtable td.tech .tw { gap: 6px; } #sc-techtable th button { white-space: normal; line-height: 1.2; width: 100%; box-sizing: border-box; } .sc-tt-card { padding-left: 10px; padding-right: 10px; } #sc-techtable .sc-bdg { display: none; } }
-  #sc-techtable td.rk { font-weight: 700; white-space: nowrap; width: 3.5rem; }
+  #sc-techtable td.rk { font-weight: 700; white-space: nowrap; width: 1%; padding-right: 2px; }
+  #sc-techtable th[data-col="rank"] { width: 1%; white-space: nowrap; }
   #sc-techtable .rk-sm { display: none; }
   @media (max-width: 44rem) { #sc-techtable .rk-sm { display: inline-block; min-width: 1.1em; font-weight: 700; color: var(--color-fg-muted); text-align: right; } }
   .sc-mk-table td.tech .nm { display: block; color: var(--color-fg-muted); font-weight: 400; font-size: var(--cds-font-size-caption); line-height: 1.25; }
