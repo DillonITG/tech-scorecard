@@ -533,6 +533,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   @media (max-width: 40rem) { .sc-mk-sum { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .sc-mk-sum .sc-tile .v { font-size: calc(var(--cds-font-size-title) * .8); }
   .sc-mk-table td.rk { font-weight: 700; width: 3.5rem; white-space: nowrap; }
+  @media (max-width: 44rem) { #sc-techtable { font-size: var(--cds-font-size-caption); } #sc-techtable th, #sc-techtable td, #sc-techtable th button { padding-left: 5px; padding-right: 5px; } #sc-techtable .sc-av { --av: 24px !important; } #sc-techtable td.tech .tw { gap: 6px; } #sc-techtable th button { white-space: normal; line-height: 1.2; width: 100%; box-sizing: border-box; } .sc-tt-card { padding-left: 10px; padding-right: 10px; } #sc-techtable .sc-bdg { display: none; } }
   .sc-mk-table td.tech .nm { display: block; color: var(--color-fg-muted); font-weight: 400; font-size: var(--cds-font-size-caption); line-height: 1.25; }
   .sc-mk-table td.sup { white-space: normal; min-width: 7rem; line-height: 1.25; }
   .sc-mk-table th button { white-space: normal; line-height: 1.2; width: 100%; box-sizing: border-box; }
@@ -718,7 +719,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
 
   <!-- TECHS -->
   <section class="sc-page" id="page-techs" data-page="techs" hidden>
-    <div class="sc-card">
+    <div class="sc-card sc-tt-card">
       <div class="sc-sec-head">
         <div>
           <h2 data-draw="tabletitle" data-source="tech_periods">Techs this fiscal month</h2>
@@ -733,7 +734,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
           <thead>
             <tr>
               <th data-field="tech_id" data-col="tech_id"><button type="button">Tech</button></th>
-              <th class="l" data-field="status" data-col="misses"><button type="button">Status</button></th>
+              <th class="l hide-sm" data-field="status" data-col="misses"><button type="button">Status</button></th>
               <th data-field="jobs" data-col="jobs" class="hide-sm"><button type="button">Jobs</button></th>
               <th data-field="mix" data-col="tc_share" class="hide-sm"><button type="button">Job mix</button></th>
               <th data-field="tu" data-col="tu" class="grp"><button type="button">Tool usage</button></th>
@@ -1520,7 +1521,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       const td = (text, cls) => { const c = document.createElement('td'); if (cls) c.className = cls; if (text != null) c.textContent = text; tr.appendChild(c); return c; };
       { const c = td(null, 'tech'), w = document.createElement('span'); w.className = 'tw'; w.append(SC.av(r.tech_id, 30), document.createTextNode(r.tech_id)); c.appendChild(w);
         if (!r.away && r.misses === 0) { const b = document.createElement('span'); b.className = 'sc-bdg'; b.textContent = '⭐'; b.title = 'On target for tool usage, tNPS and FTR'; w.appendChild(b); } }
-      const st = td(null, 'l'); const p = document.createElement('span'); p.className = 'sc-pill ' + (r.away ? '' : r.misses === 0 ? 'ok' : r.misses === 1 ? 'warn' : 'bad'); p.textContent = r.status; st.appendChild(p);
+      const st = td(null, 'l hide-sm'); const p = document.createElement('span'); p.className = 'sc-pill ' + (r.away ? '' : r.misses === 0 ? 'ok' : r.misses === 1 ? 'warn' : 'bad'); p.textContent = r.status; st.appendChild(p);
       td(r.away ? '—' : d3.format(',')(r.jobs), 'hide-sm');
       const mc = td(null, 'hide-sm'); const bar = document.createElement('div'); bar.className = 'sc-mix'; bar.title = r.mix;
       [r.install_share, r.tc_share, r.sro_share].forEach((s, i) => { const seg = document.createElement('span'); seg.style.width = s + '%'; seg.style.background = mixColors()[i]; bar.appendChild(seg); });
