@@ -1544,7 +1544,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       if (r.away) tr.title = 'Last jobs in ' + r.last_label + '; numbers shown are from then.';
       tr.dataset.key = r.tech_id; tr.tabIndex = 0;
       const td = (text, cls) => { const c = document.createElement('td'); if (cls) c.className = cls; if (text != null) c.textContent = text; tr.appendChild(c); return c; };
-      { const rk = td(r.rank ? (r.rank <= 3 ? ['🥇', '🥈', '🥉'][r.rank - 1] + ' ' : '') + r.rank : '—', 'rk l hide-sm'); if (r.score != null) rk.title = d3.format('.1f')(r.score) + ' pts'; }
+      { const rk = td(r.rank ? String(r.rank) : '—', 'rk l hide-sm'); if (r.score != null) rk.title = d3.format('.1f')(r.score) + ' pts'; }
       { const c = td(null, 'tech'), w = document.createElement('span'); w.className = 'tw'; const rs = document.createElement('span'); rs.className = 'rk-sm'; rs.textContent = r.rank || '–'; w.append(rs, SC.av(r.tech_id, 30), document.createTextNode(r.tech_id)); c.appendChild(w);
         if (!r.away && r.misses === 0) { const b = document.createElement('span'); b.className = 'sc-bdg'; b.textContent = '⭐'; b.title = 'On target for tool usage, tNPS and FTR'; w.appendChild(b); } }
       const st = td(null, 'l hide-sm'); const p = document.createElement('span'); p.className = 'sc-pill ' + (r.away ? '' : r.misses === 0 ? 'ok' : r.misses === 1 ? 'warn' : 'bad'); p.textContent = r.status; st.appendChild(p);
