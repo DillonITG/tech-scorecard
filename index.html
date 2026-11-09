@@ -429,9 +429,6 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   .sc-cotw blockquote { margin: 0; font-family: var(--font-anthropic-serif); font-size: calc(var(--cds-font-size-body) * 1.25); line-height: 1.4; min-height: 3.6em; transition: opacity .4s; }
   .sc-cotw blockquote.out { opacity: 0; }
   .sc-cotw .dots { display: flex; gap: 6px; } .sc-cotw .dots button { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 50%; background: var(--cds-chart-grid); cursor: pointer; } .sc-cotw .dots button[aria-current="true"] { background: #e8b931; }
-  .sc-quote.ten { position: relative; border-left-color: #e8b931; }
-  .sc-quote.ten::after { content: "✨"; position: absolute; top: 6px; right: 8px; font-size: 14px; animation: sc-twinkle 2.4s ease-in-out infinite; }
-  .sc-quote.ten .meta { padding-right: 22px; }
   @keyframes sc-twinkle { 0%, 100% { opacity: .35; transform: scale(.85); } 50% { opacity: 1; transform: scale(1.1); } }
   /* Market leaders: podium, rank arrows, our-team glow. */
   .sc-podium { display: grid; grid-template-columns: repeat(3, minmax(0, 200px)); justify-content: center; align-items: end; gap: 12px; padding-top: 6px; }
@@ -449,7 +446,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   .sc-mk-table tr.ours td { animation: sc-rise .38s ease-out both, sc-ourglow 1.8s ease-in-out .6s 1; }
   @keyframes sc-ourglow { 50% { background: color-mix(in srgb, #e8b931 38%, transparent); } }
   @media (prefers-reduced-motion: reduce) {
-    .sc-table tbody tr, .sc-fb-list > .sc-quote, .sc-ln, .sc-dotin, .sc-fill, .sc-heat td, .sc-ring .fg, .sc-badge, .sc-gauge .needle, .sc-pod .who, .sc-pod .blk, .sc-mk-table tr.ours td, .sc-quote.ten::after { animation: none !important; }
+    .sc-table tbody tr, .sc-fb-list > .sc-quote, .sc-ln, .sc-dotin, .sc-fill, .sc-heat td, .sc-ring .fg, .sc-badge, .sc-gauge .needle, .sc-pod .who, .sc-pod .blk, .sc-mk-table tr.ours td { animation: none !important; }
     .sc-pop { display: none; }
   }
   /* Tab switch: a quick fade and lift (Dillon, Nov 8). */
