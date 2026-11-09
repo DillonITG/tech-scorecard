@@ -544,6 +544,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   .sc-mk-table th button { padding-left: 7px; padding-right: 7px; }
   .sc-mk-table .sc-mix { width: 64px; }
   .sc-mk-table td.kpi { background: color-mix(in srgb, #5b9cf5 11%, transparent); font-weight: 700; font-size: calc(var(--cds-font-size-body) * 1.08); }
+  .sc-mk-table td.kpi:not(.miss):not(.dim) { color: var(--color-ok); }
   .sc-mk-table th.kpi { background: color-mix(in srgb, #5b9cf5 16%, var(--color-panel)); color: var(--color-fg); font-weight: 700; }
   @media (max-width: 44rem) { .sc-mk-card { padding-left: 8px; padding-right: 8px; } .sc-mk-table .mkw, .sc-mk-table .sc-mv, .sc-mk-table .chip, .sc-mk-table .sc-low { display: none; } .sc-mk-table td.rk { width: auto; } .sc-mk-table td.tech .nm { max-width: 6.25rem; overflow: hidden; text-overflow: ellipsis; } .sc-mk-table { font-size: var(--cds-font-size-caption); } .sc-mk-table td.kpi { font-size: var(--cds-font-size-caption); } .sc-mk-table th, .sc-mk-table td, .sc-mk-table th button { padding-left: 5px; padding-right: 5px; } }
   .sc-pod .who b .nm { font-weight: 400; color: var(--color-fg); font-size: var(--cds-font-size-caption); }
