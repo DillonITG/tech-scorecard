@@ -533,7 +533,15 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   @media (max-width: 40rem) { .sc-mk-sum { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .sc-mk-sum .sc-tile .v { font-size: calc(var(--cds-font-size-title) * .8); }
   .sc-mk-table td.rk { font-weight: 700; width: 3.5rem; white-space: nowrap; }
-  .sc-mk-table td.tech .nm { color: var(--color-fg-muted); font-weight: 400; }
+  .sc-mk-table td.tech .nm { display: block; color: var(--color-fg-muted); font-weight: 400; font-size: var(--cds-font-size-caption); line-height: 1.25; }
+  .sc-mk-table td.sup { white-space: normal; min-width: 7rem; line-height: 1.25; }
+  .sc-mk-table th button { white-space: normal; line-height: 1.2; width: 100%; box-sizing: border-box; }
+  .sc-mk-table th, .sc-mk-table td { padding-left: 7px; padding-right: 7px; }
+  .sc-mk-table th button { padding-left: 7px; padding-right: 7px; }
+  .sc-mk-table .sc-mix { width: 64px; }
+  .sc-mk-table td.kpi { background: color-mix(in srgb, #5b9cf5 11%, transparent); font-weight: 700; font-size: calc(var(--cds-font-size-body) * 1.08); }
+  .sc-mk-table th.kpi { background: color-mix(in srgb, #5b9cf5 16%, var(--color-panel)); color: var(--color-fg); font-weight: 700; }
+  @media (max-width: 44rem) { .sc-mk-card { padding-left: 8px; padding-right: 8px; } .sc-mk-table .mkw, .sc-mk-table .sc-mv, .sc-mk-table .chip, .sc-mk-table .sc-low { display: none; } .sc-mk-table td.rk { width: auto; } .sc-mk-table td.tech .nm { max-width: 6.25rem; overflow: hidden; text-overflow: ellipsis; } .sc-mk-table { font-size: var(--cds-font-size-caption); } .sc-mk-table td.kpi { font-size: var(--cds-font-size-caption); } .sc-mk-table th, .sc-mk-table td, .sc-mk-table th button { padding-left: 5px; padding-right: 5px; } }
   .sc-pod .who b .nm { font-weight: 400; color: var(--color-fg); font-size: var(--cds-font-size-caption); }
   .sc-mk-table td.sup { color: var(--color-fg-muted); }
   .sc-mk-table td.mkscore { font-weight: 600; }
@@ -884,7 +892,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     </div>
     <div class="sc-mk-sum" data-draw="mksum" data-source="market tech_table"></div>
     <div class="sc-podium" data-draw="mkpodium" data-source="market tech_table"></div>
-    <article class="sc-card">
+    <article class="sc-card sc-mk-card">
       <div class="sc-legend"><span>Job mix:</span><span><i class="box" data-draw="mixkey" data-which="0"></i>Installs</span><span><i class="box" data-draw="mixkey" data-which="1"></i>Trouble calls</span><span><i class="box" data-draw="mixkey" data-which="2"></i>SROs</span></div>
       <div class="sc-tablebox" style="max-height:none">
         <table class="sc-table sc-mk-table" id="sc-mktable">
@@ -892,15 +900,15 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
             <th class="l" data-col="rank" aria-sort="ascending"><button type="button">Rank</button></th>
             <th class="l" data-col="tech_id"><button type="button">Tech</button></th>
             <th class="l hide-sm" data-col="sup"><button type="button">Supervisor</button></th>
-            <th class="l" data-col="misses"><button type="button">Status</button></th>
-            <th data-col="score"><button type="button">Score</button></th>
+            <th class="l hide-sm" data-col="misses"><button type="button">Status</button></th>
+            <th class="hide-sm" data-col="score"><button type="button">Score</button></th>
             <th class="hide-sm" data-col="jobs"><button type="button">Jobs</button></th>
             <th class="hide-sm" data-col="tc_share"><button type="button">Job mix</button></th>
-            <th class="grp hide-sm" data-col="tu"><button type="button">Tool usage</button></th>
+            <th class="grp kpi" data-col="tu"><button type="button">Tool usage</button></th>
             <th class="hide-sm" data-col="tu_fails"><button type="button">Tool usage fails</button></th>
-            <th data-col="tnps"><button type="button">tNPS</button></th>
+            <th class="kpi" data-col="tnps"><button type="button">tNPS</button></th>
             <th class="hide-sm" data-col="tnps_fails"><button type="button">tNPS fails</button></th>
-            <th data-col="ftr"><button type="button">FTR</button></th>
+            <th class="kpi" data-col="ftr"><button type="button">FTR</button></th>
             <th class="hide-sm" data-col="ftr_fails"><button type="button">FTR fails</button></th>
           </tr></thead>
           <tbody data-draw="mktable" data-source="market tech_table"></tbody>
@@ -913,14 +921,14 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
             <thead><tr>
               <th class="l" data-col="tech_id"><button type="button">Tech</button></th>
               <th class="l hide-sm" data-col="sup"><button type="button">Supervisor</button></th>
-              <th class="l" data-col="misses"><button type="button">Status</button></th>
+              <th class="l hide-sm" data-col="misses"><button type="button">Status</button></th>
               <th class="hide-sm" data-col="jobs"><button type="button">Jobs</button></th>
               <th class="hide-sm" data-col="tc_share"><button type="button">Job mix</button></th>
-              <th class="grp hide-sm" data-col="tu"><button type="button">Tool usage</button></th>
+              <th class="grp kpi" data-col="tu"><button type="button">Tool usage</button></th>
             <th class="hide-sm" data-col="tu_fails"><button type="button">Tool usage fails</button></th>
-              <th data-col="tnps"><button type="button">tNPS</button></th>
+              <th class="kpi" data-col="tnps"><button type="button">tNPS</button></th>
               <th class="hide-sm" data-col="tnps_fails"><button type="button">tNPS fails</button></th>
-              <th data-col="ftr"><button type="button">FTR</button></th>
+              <th class="kpi" data-col="ftr"><button type="button">FTR</button></th>
               <th class="hide-sm" data-col="ftr_fails"><button type="button">FTR fails</button></th>
             </tr></thead>
             <tbody data-draw="mktable2" data-source="market tech_table"></tbody>
@@ -2286,22 +2294,22 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
         if (pr == null) { mv.className = 'sc-mv new'; mv.textContent = 'new'; mv.title = 'Not ranked last month'; }
         else if (pr !== r.rank) { const up = pr > r.rank; mv.className = 'sc-mv ' + (up ? 'up' : 'down'); mv.textContent = (up ? '▲' : '▼') + Math.abs(pr - r.rank); mv.title = (up ? 'Up ' : 'Down ') + Math.abs(pr - r.rank) + ' since last month (was #' + pr + ')'; }
         if (mv.className) rk.appendChild(mv); } }
-    const t = cell(tr, 'l tech', 'Tech ' + r.tech_id);
-    { const nm = SC.mkname(r.tech_id); if (nm) t.append(' ', fbEl('span', 'nm', nm)); }
+    const t = cell(tr, 'l tech'); t.append(fbEl('span', 'mkw', 'Tech '), String(r.tech_id));
     if (ours.has(String(r.tech_id))) t.appendChild(fbEl('span', 'chip', 'Our team'));
+    { const nm = SC.mkname(r.tech_id); if (nm) t.appendChild(fbEl('span', 'nm', nm)); }
     cell(tr, 'l sup hide-sm', r.sup);
-    const st = cell(tr, 'l'); st.appendChild(fbEl('span', 'sc-pill ' + (r.misses === 0 ? 'ok' : r.misses === 1 ? 'warn' : 'bad'), r.status));
-    if (ranked) cell(tr, 'mkscore', d3.format('.1f')(r.score));
+    const st = cell(tr, 'l hide-sm'); st.appendChild(fbEl('span', 'sc-pill ' + (r.misses === 0 ? 'ok' : r.misses === 1 ? 'warn' : 'bad'), r.status));
+    if (ranked) cell(tr, 'mkscore hide-sm', d3.format('.1f')(r.score));
     cell(tr, 'hide-sm', d3.format(',')(r.jobs));
     const mc = cell(tr, 'hide-sm');
     if (r.has_mix) { const bar = fbEl('div', 'sc-mix'); bar.title = r.mix; [r.install_share, r.tc_share, r.sro_share].forEach((v, i) => { const seg = document.createElement('span'); seg.style.width = v + '%'; seg.style.background = mixColors()[i]; bar.appendChild(seg); }); mc.appendChild(bar); }
     else mc.textContent = '—';
-    cell(tr, 'grp hide-sm' + (r.tu_miss ? ' miss' : ''), SC.pct(r.tu));
+    cell(tr, 'grp kpi' + (r.tu_miss ? ' miss' : ''), SC.pct(r.tu));
     cell(tr, 'hide-sm' + (r.tu_fails > 0 ? ' miss' : ''), String(r.tu_fails));
-    const n = cell(tr, r.tnps_miss ? 'miss' : r.surveys && r.low_sample ? 'dim' : '', r.surveys ? SC.pct(r.tnps) : '—');
+    const n = cell(tr, 'kpi' + (r.tnps_miss ? ' miss' : r.surveys && r.low_sample ? ' dim' : ''), r.surveys ? SC.pct(r.tnps) : '—');
     if (r.surveys && r.low_sample) { const lo = fbEl('span', 'sc-low', 'low'); lo.title = r.surveys + ' surveys'; n.appendChild(lo); }
     cell(tr, 'hide-sm' + (r.tnps_fails > 0 ? ' miss' : ''), String(r.tnps_fails));
-    cell(tr, r.ftr_miss ? 'miss' : '', SC.pct(r.ftr));
+    cell(tr, 'kpi' + (r.ftr_miss ? ' miss' : ''), SC.pct(r.ftr));
     cell(tr, 'hide-sm' + (r.ftr_fails > 0 ? ' miss' : ''), String(r.ftr_fails));
     return tr;
   };
