@@ -522,7 +522,13 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   .sc-fail { display: flex; align-items: center; justify-content: center; gap: .4rem; min-height: inherit; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
   .sc-fail::before { content: ""; width: .375rem; height: .375rem; border-radius: 50%; background: var(--color-bad); }
   @media (max-width: 44rem) { .sc-table .hide-sm { display: none; } .sc dl { grid-template-columns: 1fr; } }
-  .sc-mk-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--cds-gap-sm) var(--cds-gap-md); }
+  .sc-mk-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--cds-gap-sm) var(--cds-gap-md); }
+  .sc-mk-bar .sc-pills button { white-space: nowrap; }
+  @media (max-width: 44rem) { .sc-mk-bar { width: 100%; align-items: stretch; } .sc-mk-bar .sc-pills { min-width: 0; } }
+  .sc-mk-bar { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+  .sc-mk-bar .sc-pills.small { order: -1; }
+  .sc-mk-bar .sc-pills { min-width: 15.5rem; justify-content: space-between; }
+  .sc-mk-bar .sc-pills button { flex: 1; }
   .sc-pills { display: inline-flex; gap: 4px; padding: 4px; border: 1px solid var(--color-border-line); border-radius: 999px; background: var(--color-panel); }
   .sc-pills button { font: inherit; font-size: 15px; font-weight: 600; border: 0; background: none; color: var(--color-fg-muted); padding: 8px 22px; border-radius: 999px; cursor: pointer; }
   .sc-pills.small button { font-size: 13px; padding: 5px 14px; }
@@ -884,6 +890,11 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
 
   <!-- MARKET LEADERS -->
   <section class="sc-page" id="page-market" data-page="market" hidden>
+    <div class="sc-mk-head">
+    <div>
+      <h2 class="sc-h2" data-draw="mktitle" data-source="market">Market leaders</h2>
+      <p class="sc-note" data-draw="mknote" data-source="market">—</p>
+    </div>
     <div class="sc-mk-bar">
       <div class="sc-pills" role="group" aria-label="Market">
         <button type="button" data-market="Broward" aria-pressed="true">Broward</button>
@@ -895,9 +906,6 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
         <button type="button" data-mkwin="6" aria-pressed="false">6 months</button>
       </div>
     </div>
-    <div>
-      <h2 class="sc-h2" data-draw="mktitle" data-source="market">Market leaders</h2>
-      <p class="sc-note" data-draw="mknote" data-source="market">—</p>
     </div>
     <div class="sc-mk-sum" data-draw="mksum" data-source="market tech_table"></div>
     <div class="sc-podium" data-draw="mkpodium" data-source="market tech_table"></div>
