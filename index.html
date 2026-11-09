@@ -7,6 +7,7 @@
 <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="favicon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script data-goatcounter="https://dillon-scorecard.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Broward &amp; Dade Tech Scorecard</title>
 <script>try { var t = localStorage.getItem('sc-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}</script>
@@ -1193,6 +1194,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   { const bar = document.getElementById('spot-bar');
     if (bar) bar.addEventListener('click', () => { const spot = document.getElementById('spotlight'); const open = spot.hidden; spot.hidden = !open; bar.setAttribute('aria-expanded', String(open)); }); }
   for (const b of document.querySelectorAll('.sc-tab')) b.addEventListener('click', () => { showPage(b.dataset.page); dash.setLink(b.dataset.page); });
+  /* Visit stats (GoatCounter on the public site): count each tab opened as its own view, e.g. /tech-scorecard/#market. */
+  for (const b of document.querySelectorAll('.sc-tab')) b.addEventListener('click', () => { try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: location.pathname + '#' + b.dataset.page, title: b.textContent.trim() }); } catch (e) {} });
   /* On Overview, the first scroll down folds the top tech and race into the slim bar, keeping what's on screen in place. Once per visit to Overview.
      Only a scroll the viewer makes counts (wheel, touch, keys, scrollbar), not the browser putting a reloaded page back where it was. */
   { let lastY = window.scrollY, folded = false, userAt = 0;
