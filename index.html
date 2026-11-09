@@ -1507,7 +1507,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       tr.dataset.key = r.tech_id; tr.tabIndex = 0;
       const td = (text, cls) => { const c = document.createElement('td'); if (cls) c.className = cls; if (text != null) c.textContent = text; tr.appendChild(c); return c; };
       { const c = td(null, 'tech'), w = document.createElement('span'); w.className = 'tw'; w.append(SC.av(r.tech_id, 30), document.createTextNode(r.tech_id)); c.appendChild(w);
-        for (const [e, t] of SC.badges(r.tech_id)) { const b = document.createElement('span'); b.className = 'sc-bdg'; b.textContent = e; b.title = t; w.appendChild(b); } }
+        if (!r.away && r.misses === 0) { const b = document.createElement('span'); b.className = 'sc-bdg'; b.textContent = '⭐'; b.title = 'On target for tool usage, tNPS and FTR'; w.appendChild(b); } }
       const st = td(null, 'l'); const p = document.createElement('span'); p.className = 'sc-pill ' + (r.away ? '' : r.misses === 0 ? 'ok' : r.misses === 1 ? 'warn' : 'bad'); p.textContent = r.status; st.appendChild(p);
       td(r.away ? '—' : d3.format(',')(r.jobs), 'hide-sm');
       const mc = td(null, 'hide-sm'); const bar = document.createElement('div'); bar.className = 'sc-mix'; bar.title = r.mix;
@@ -2065,7 +2065,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     };
     pick.forEach((_, j) => { const b = fbEl('button'); b.type = 'button'; b.setAttribute('aria-label', 'Comment ' + (j + 1)); b.onclick = () => { show(j, true); restart(); }; dots.appendChild(b); });
     let paused = false; el.onmouseenter = () => { paused = true; }; el.onmouseleave = () => { paused = false; };
-    const restart = () => { clearInterval(el.__t); if (pick.length > 1 && !SC.still) el.__t = setInterval(() => { if (!paused && el.offsetParent) show(i + 1, true); }, 7000); };
+    const restart = () => { clearInterval(el.__t); if (pick.length > 1 && !SC.still) el.__t = setInterval(() => { if (!paused && el.offsetParent) show(i + 1, true); }, 4000); };
     show(0, false); restart();
   });
   dash.draw('fblist', (el) => {
