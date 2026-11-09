@@ -384,6 +384,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   .sc-table:not(.sc-qc-table) tbody tr:nth-child(16), .sc-fb-list > .sc-quote:nth-child(16) { animation-delay: 525ms; }
   /* Charts trace themselves in; dots and labels follow. */
   .sc-ln { stroke-dasharray: 1; animation: sc-ln 1s ease-out both; }
+  .sc-wait, .sc-wait * { animation-play-state: paused !important; }
   @keyframes sc-ln { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
   .sc-dotin { animation: sc-fade .35s ease-out .75s both; }
   @keyframes sc-fade { from { opacity: 0; } to { opacity: 1; } }
@@ -1221,6 +1222,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     const pad = Math.max(0.5, (hi - lo) * 0.15); lo = Math.max(0, lo - pad); hi = Math.min(100, hi + pad);
     if (hi - lo < 1) { hi = Math.min(100, lo + 1); lo = Math.max(0, hi - 1); }
     const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('height', H);
+    window.SC.watchDraw(svg.node());
     const top = marks && marks.length ? 26 : 18;
     const y = d3.scaleLinear([lo, hi], [H - 22, top]).nice(4);
     const ticks = y.ticks(4);
@@ -1427,7 +1429,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     const x = d3.scaleLinear([0, vals.length - 1], [3, W - 3]), y = d3.scaleLinear([lo, hi], [H - 3, 3]);
     const svg = d3.select(td).append('svg').attr('class', 'sc-spark').attr('viewBox', `0 0 ${W} ${H}`).attr('width', W).attr('height', H).attr('aria-hidden', 'true');
     svg.append('line').attr('x1', 0).attr('x2', W).attr('y1', y(SC.T.ftr)).attr('y2', y(SC.T.ftr)).attr('stroke', 'var(--cds-chart-reference)').attr('stroke-dasharray', '2 2');
-    svg.append('path').datum(vals).attr('d', d3.line().defined((v) => v != null).curve(d3.curveMonotoneX).x((v, i) => x(i)).y((v) => y(v))).attr('fill', 'none').attr('stroke', dash.colors[0]).attr('stroke-width', 1.5).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round');
+    SC.watchDraw(svg.node()); svg.append('path').datum(vals).attr('class', 'sc-ln').attr('pathLength', 1).attr('d', d3.line().defined((v) => v != null).curve(d3.curveMonotoneX).x((v, i) => x(i)).y((v) => y(v))).attr('fill', 'none').attr('stroke', dash.colors[0]).attr('stroke-width', 1.5).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round');
     const li = vals.length - 1;
     if (vals[li] != null) svg.append('circle').attr('cx', x(li)).attr('cy', y(vals[li])).attr('r', 2.5).attr('fill', vals[li] < SC.T.ftr ? 'var(--cds-chart-status-critical)' : dash.colors[0]);
   };
@@ -1729,6 +1731,9 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
 
   /* Tech avatars by tech id: image paths next to the page (avatars/<id>.jpg on the site). Techs not listed get an empty circle. */
   SC.avatars = {"I04A": "avatars/I04A.jpg?v=dd9cbb4a", "I0N1": "avatars/I0N1.jpg?v=610bc995", "7302": "avatars/7302.jpg?v=a0bc2b9a", "7134": "avatars/7134.jpg?v=ee3b7895", "7189": "avatars/7189.jpg?v=c897d662", "7338": "avatars/7338.jpg?v=41e146b1", "7150": "avatars/7150.jpg?v=4ed22f78", "7044": "avatars/7044.jpg?v=ca5ab70d", "I08Y": "avatars/I08Y.jpg?v=83661868"};
+  /* Charts draw themselves when they come on screen (not while scrolled off or on a hidden tab). */
+  SC.drawObs = 'IntersectionObserver' in window ? new IntersectionObserver((es) => { for (const e of es) e.target.classList.toggle('sc-wait', !e.isIntersecting); }, { threshold: 0.35 }) : null;
+  SC.watchDraw = (node) => { if (SC.drawObs && node) { node.classList.add('sc-wait'); requestAnimationFrame(() => { if (node.isConnected) SC.drawObs.observe(node); else node.classList.remove('sc-wait'); }); } return node; };
   SC.av = (id, size) => {
     const s = document.createElement('span'); s.className = 'sc-av'; s.setAttribute('aria-hidden', 'true'); if (size) s.style.setProperty('--av', size + 'px');
     const src = id && SC.avatars[id];
