@@ -729,6 +729,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
               <th data-field="jobs" data-col="jobs" class="hide-sm"><button type="button">Jobs</button></th>
               <th data-field="mix" data-col="tc_share" class="hide-sm"><button type="button">Job mix</button></th>
               <th data-field="tu" data-col="tu" class="grp"><button type="button">Tool usage</button></th>
+              <th data-field="tu_fails" data-col="tu_fails" class="hide-sm"><button type="button">Tool usage fails</button></th>
               <th data-field="tnps" data-col="tnps"><button type="button">tNPS</button></th>
               <th data-field="tnps_3mo" data-col="tnps_3mo" class="hide-sm"><button type="button">tNPS 3 mo</button></th>
               <th data-field="tnps_fails" data-col="tnps_fails" class="hide-sm"><button type="button">tNPS fails</button></th>
@@ -896,6 +897,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
             <th class="hide-sm" data-col="jobs"><button type="button">Jobs</button></th>
             <th class="hide-sm" data-col="tc_share"><button type="button">Job mix</button></th>
             <th class="grp hide-sm" data-col="tu"><button type="button">Tool usage</button></th>
+            <th class="hide-sm" data-col="tu_fails"><button type="button">Tool usage fails</button></th>
             <th data-col="tnps"><button type="button">tNPS</button></th>
             <th class="hide-sm" data-col="tnps_fails"><button type="button">tNPS fails</button></th>
             <th data-col="ftr"><button type="button">FTR</button></th>
@@ -915,6 +917,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
               <th class="hide-sm" data-col="jobs"><button type="button">Jobs</button></th>
               <th class="hide-sm" data-col="tc_share"><button type="button">Job mix</button></th>
               <th class="grp hide-sm" data-col="tu"><button type="button">Tool usage</button></th>
+            <th class="hide-sm" data-col="tu_fails"><button type="button">Tool usage fails</button></th>
               <th data-col="tnps"><button type="button">tNPS</button></th>
               <th class="hide-sm" data-col="tnps_fails"><button type="button">tNPS fails</button></th>
               <th data-col="ftr"><button type="button">FTR</button></th>
@@ -936,6 +939,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       <dt>Team totals</dt><dd>Counts are added across techs before the rate is worked out, so busier techs carry more weight.</dd>
       <dt>Targets</dt><dd>Tool usage <span data-draw="target" data-kpi="tu">—</span>, tNPS <span data-draw="target" data-kpi="tnps">—</span>, FTR <span data-draw="target" data-kpi="ftr">—</span>.</dd>
       <dt>tNPS 3 mo</dt><dd>Promoters minus detractors over all surveys in the last three fiscal months, which steadies small monthly samples. A tech’s monthly tNPS counts as a miss only with at least 5 surveys that month.</dd>
+      <dt>Tool usage fails</dt><dd>Jobs this fiscal month where tool usage was required but not done.</dd>
       <dt>tNPS fails</dt><dd>Detractor surveys (scores of 0 to 6) the tech got this fiscal month.</dd>
       <dt>FTR fails</dt><dd>Jobs this fiscal month that did not count as a first-time fix.</dd>
       <dt>Promoters to target</dt><dd>How many promoter surveys (scores of 9 or 10) in a row the tech needs, with no detractors, to bring this month’s tNPS up to target. Passives (7 or 8) don’t subtract, but they still count as surveys, so they pull tNPS down.</dd>
@@ -1040,7 +1044,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
           mix: 'Installs ' + share(r.installs, mixTotal) + '%, trouble calls ' + share(r.tcs, mixTotal) + '%, SROs ' + share(r.sros, mixTotal) + '%',
           tu: r.tu, tnps: r.tnps, tnps_surveys: r.tnps_surveys, low_sample: false,
           tnps_3mo: s3 > 0 ? Math.round(1000 * nps3 / s3) / 10 : null, tnps_3mo_surveys: s3,
-          ftr: r.ftr, ftr_jobs: r.ftr_total, ftr_needed: 0, tnps_needed: 0, tnps_fails: null, ftr_fails: null, repeat: r.repeat, rework: r.rework, pht: r.pht, met: r.met,
+          ftr: r.ftr, ftr_jobs: r.ftr_total, ftr_needed: 0, tnps_needed: 0, tnps_fails: null, ftr_fails: null, tu_fails: null, repeat: r.repeat, rework: r.rework, pht: r.pht, met: r.met,
           tu_miss: false, tnps_miss: false, ftr_miss: false, ftr_change: null,
           ftr_hist: ps.map((q) => { const x = find(id, q); return x ? x.ftr : ''; }).join(',')
         };
@@ -1063,7 +1067,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
           mix: 'Installs ' + share(r.installs, mixTotal) + '%, trouble calls ' + share(r.tcs, mixTotal) + '%, SROs ' + share(r.sros, mixTotal) + '%',
           tu: r.tu, tnps: r.tnps, tnps_surveys: r.tnps_surveys, low_sample: r.tnps_surveys < 5,
           tnps_3mo: s3 > 0 ? Math.round(1000 * nps3 / s3) / 10 : null, tnps_3mo_surveys: s3,
-          ftr: r.ftr, ftr_jobs: r.ftr_total, ftr_needed: need, tnps_fails: r.detractors, ftr_fails: r.ftr_fail,
+          ftr: r.ftr, ftr_jobs: r.ftr_total, ftr_needed: need, tnps_fails: r.detractors, ftr_fails: r.ftr_fail, tu_fails: r.tu_e - r.tu_n,
           tnps_needed: r.tnps_surveys > 0 ? tnpsNeed : null, promoters: r.promoters, detractors: r.detractors,
           repeat: r.repeat, rework: r.rework, pht: r.pht, met: r.met,
           tu_miss: r.tu_miss, tnps_miss: r.tnps_miss, ftr_miss: r.ftr_miss,
@@ -1447,7 +1451,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       const tu_miss = c.tu != null && c.tu < SC.T.tu, tnps_miss = c.tnps_surveys >= 5 && c.tnps != null && c.tnps < SC.T.tnps, ftr_miss = c.ftr != null && c.ftr < SC.T.ftr;
       const misses = [tu_miss, tnps_miss, ftr_miss].filter(Boolean).length;
       return Object.assign({}, row, c, { away: false, misses, status: misses === 0 ? 'On target' : misses + ' below target', tu_miss, tnps_miss, ftr_miss,
-        low_sample: c.tnps_surveys < 5, ftr_needed: null, tnps_needed: null, tnps_fails: null, ftr_fails: null,
+        low_sample: c.tnps_surveys < 5, ftr_needed: null, tnps_needed: null, tnps_fails: null, ftr_fails: null, tu_fails: null,
         mix: 'Installs ' + c.install_share + '%, trouble calls ' + c.tc_share + '%, SROs ' + c.sro_share + '%' });
     });
   };
@@ -1514,6 +1518,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       [r.install_share, r.tc_share, r.sro_share].forEach((s, i) => { const seg = document.createElement('span'); seg.style.width = s + '%'; seg.style.background = mixColors()[i]; bar.appendChild(seg); });
       mc.appendChild(bar);
       trend(td(SC.pct(r.tu), 'grp' + (r.tu_miss ? ' miss' : '')), r.tu, pc && pc.tu, 'tu');
+      { const c = td(r.tu_fails == null ? '—' : String(r.tu_fails), 'hide-sm' + (r.tu_fails > 0 ? ' miss' : '')); if (r.tu_fails == null && !r.away) c.title = 'Shown for the current month only'; }
       const tn = td(SC.pct(r.tnps), r.tnps_miss ? 'miss' : r.low_sample ? 'dim' : ''); trend(tn, r.tnps, pc && pc.tnps_surveys ? pc.tnps : null, 'tnps');
       if (r.low_sample) { const s = document.createElement('span'); s.className = 'sc-low'; s.textContent = 'low'; s.title = r.tnps_surveys + ' surveys'; tn.appendChild(s); }
       td(SC.pct(r.tnps_3mo), 'hide-sm' + (r.tnps_3mo != null && r.tnps_3mo < SC.T.tnps ? ' miss' : ''));
@@ -2212,7 +2217,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       const sh = (v) => mixT ? Math.round(1000 * v / mixT) / 10 : 0;
       out.push({ tech_id: id, sup: mine[mine.length - 1].supervisor || '', jobs, surveys, ftr, tnps, tu, ok, score: ok ? W.ftr * adjFtr + W.tnps * adjNps + W.tu * tu : null, adj_ftr: adjFtr, adj_tnps: adjNps,
         misses, status: misses === 0 ? 'On target' : misses + ' below target', tu_miss, tnps_miss, ftr_miss, low_sample: surveys < 5,
-        tnps_fails: s('detractors'), ftr_fails: s('ftr_fail_jobs'), has_mix: mixT > 0,
+        tnps_fails: s('detractors'), ftr_fails: s('ftr_fail_jobs'), tu_fails: tue - s('tu_result'), has_mix: mixT > 0,
         install_share: sh(inst), tc_share: mixT ? sh(tcs) : null, sro_share: sh(sros),
         mix: 'Installs ' + sh(inst) + '%, trouble calls ' + sh(tcs) + '%, SROs ' + sh(sros) + '%' });
     }
@@ -2292,6 +2297,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     if (r.has_mix) { const bar = fbEl('div', 'sc-mix'); bar.title = r.mix; [r.install_share, r.tc_share, r.sro_share].forEach((v, i) => { const seg = document.createElement('span'); seg.style.width = v + '%'; seg.style.background = mixColors()[i]; bar.appendChild(seg); }); mc.appendChild(bar); }
     else mc.textContent = '—';
     cell(tr, 'grp hide-sm' + (r.tu_miss ? ' miss' : ''), SC.pct(r.tu));
+    cell(tr, 'hide-sm' + (r.tu_fails > 0 ? ' miss' : ''), String(r.tu_fails));
     const n = cell(tr, r.tnps_miss ? 'miss' : r.surveys && r.low_sample ? 'dim' : '', r.surveys ? SC.pct(r.tnps) : '—');
     if (r.surveys && r.low_sample) { const lo = fbEl('span', 'sc-low', 'low'); lo.title = r.surveys + ' surveys'; n.appendChild(lo); }
     cell(tr, 'hide-sm' + (r.tnps_fails > 0 ? ' miss' : ''), String(r.tnps_fails));
@@ -2431,7 +2437,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     'Find a tech': 'Buscar técnico',
     'Job mix:': 'Tipos de trabajo:', 'Installs': 'Instalaciones', 'Trouble calls': 'Llamadas de servicio', 'SROs': 'SRO',
     'Status': 'Estado', 'Jobs': 'Trabajos', 'Job mix': 'Tipos de trabajo', 'tNPS 3 mo': 'tNPS 3 meses',
-    'tNPS fails': 'Fallas tNPS', 'FTR fails': 'Fallas FTR',
+    'tNPS fails': 'Fallas tNPS', 'FTR fails': 'Fallas FTR', 'Tool usage fails': 'Fallas de uso de herramienta',
+    'Jobs this fiscal month where tool usage was required but not done.': 'Trabajos de este mes fiscal donde se requería el uso de herramienta y no se hizo.',
     'Detractor surveys (scores of 0 to 6) the tech got this fiscal month.': 'Encuestas detractoras (puntaje de 0 a 6) que recibió el técnico este mes fiscal.',
     'Jobs this fiscal month that did not count as a first-time fix.': 'Trabajos de este mes fiscal que no contaron como reparación a la primera.',
     'Fixes to target': 'Para llegar a la meta', 'Promoters to target': 'Promotores para la meta', 'How many promoter surveys (scores of 9 or 10) in a row the tech needs, with no detractors, to bring this month’s tNPS up to target. Passives (7 or 8) don’t subtract, but they still count as surveys, so they pull tNPS down.': 'Cuántas encuestas de promotores (puntaje de 9 o 10) seguidas necesita el técnico, sin detractores, para subir el tNPS de este mes a la meta. Los pasivos (7 u 8) no restan, pero sí cuentan como encuestas, así que bajan el tNPS.', 'Repeat': 'Repetición', 'Rework': 'Retrabajo', 'PHT pass': 'PHT aprobado',
@@ -2522,7 +2529,8 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     'Find a tech': 'Chèche yon teknisyen',
     'Job mix:': 'Kalite travay:', 'Installs': 'Enstalasyon', 'Trouble calls': 'Apèl pou pwoblèm', 'SROs': 'SRO',
     'Status': 'Estati', 'Jobs': 'Travay', 'Job mix': 'Kalite travay', 'tNPS 3 mo': 'tNPS 3 mwa',
-    'tNPS fails': 'Echèk tNPS', 'FTR fails': 'Echèk FTR',
+    'tNPS fails': 'Echèk tNPS', 'FTR fails': 'Echèk FTR', 'Tool usage fails': 'Echèk itilizasyon zouti',
+    'Jobs this fiscal month where tool usage was required but not done.': 'Travay mwa fiskal sa a kote yo te bezwen itilize zouti a men yo pa t fè l.',
     'Detractor surveys (scores of 0 to 6) the tech got this fiscal month.': 'Sondaj detraktè (nòt 0 a 6) teknisyen an resevwa mwa fiskal sa a.',
     'Jobs this fiscal month that did not count as a first-time fix.': 'Travay mwa fiskal sa a ki pa t konte kòm reparasyon premye fwa.',
     'Fixes to target': 'Pou rive nan objektif', 'Promoters to target': 'Pwomotè pou objektif', 'How many promoter surveys (scores of 9 or 10) in a row the tech needs, with no detractors, to bring this month’s tNPS up to target. Passives (7 or 8) don’t subtract, but they still count as surveys, so they pull tNPS down.': 'Konbyen sondaj pwomotè (nòt 9 oswa 10) youn dèyè lòt teknisyen an bezwen, san detraktè, pou tNPS mwa sa a rive nan objektif. Pasif yo (7 oswa 8) pa retire pwen, men yo konte kòm sondaj, kidonk yo fè tNPS la desann.', 'Repeat': 'Repetisyon', 'Rework': 'Retravay', 'PHT pass': 'PHT pase',
