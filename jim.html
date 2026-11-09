@@ -411,6 +411,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
   .sc-lane .track { position: relative; height: 44px; border-radius: 999px; background: repeating-linear-gradient(90deg, var(--cds-chart-grid) 0 14px, transparent 14px 22px) center / 100% 2px no-repeat, color-mix(in srgb, var(--cds-chart-grid) 55%, transparent); }
   .sc-lane .track .flag { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 22px; }
   .sc-lane .track .car { position: absolute; top: 50%; transform: translate(-50%, -64%) scaleX(-1); font-size: 34px; line-height: 1; display: block; transition: left var(--cds-dur-slow) ease; }
+  .sc-lane .track .car.drive { transition: left 2s cubic-bezier(.25, .8, .25, 1); }
   .sc-lane .pts { font-family: var(--font-anthropic-serif); font-size: calc(var(--cds-font-size-title) * .8); line-height: 1; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
   .sc-lane .gap { grid-column: 2 / -1; margin: 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
   .sc-lane.first .gap { color: var(--color-ok); font-weight: 600; }
@@ -1263,7 +1264,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     const io = new IntersectionObserver((ents) => { if (ents.some((x) => x.isIntersecting)) { io.disconnect(); go(); } }, { threshold: 0.6 });
     io.observe(el);
   };
-  dash.draw('kpi', (el) => { const r = latest(); if (!r) { el.textContent = '—'; return; } if (el.dataset.counted === 'run') { el._cv = r[el.dataset.kpi]; return; } SC.countUp(el, r[el.dataset.kpi], SC.pct); });
+  dash.draw('kpi', (el) => { const r = latest(); el.textContent = r ? SC.pct(r[el.dataset.kpi]) : '—'; });
   dash.draw('delta', (el) => {
     const r = latest(); const k = el.dataset.kpi;
     el.classList.remove('is-good', 'is-bad');
@@ -1700,7 +1701,9 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       const wb = mk('div', 'whobox'); wb.append(SC.av(r.tech_id, 42), who); lane.appendChild(wb);
       const track = mk('div', 'track'); track.setAttribute('aria-hidden', 'true');
       track.appendChild(mk('span', 'flag', '🏁'));
-      const car = mk('span', 'car', '🏎️'); car.style.left = pos(r.score) + '%'; track.appendChild(car);
+      const car = mk('span', 'car', '🏎️'); track.appendChild(car);
+      if (SC.raceDriven || SC.still) car.style.left = pos(r.score) + '%';
+      else { car.style.left = '6%'; car.dataset.to = pos(r.score); car.style.transitionDelay = (i * 0.18) + 's'; }
       lane.appendChild(track);
       lane.appendChild(mk('span', 'pts', d3.format('.1f')(r.score) + ' pts'));
       let gap;
@@ -1712,6 +1715,12 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
       lane.appendChild(mk('p', 'gap', gap));
       el.appendChild(lane);
     });
+    /* First time the race is on screen, the cars drive from the start line to their spots (Dillon, Nov 8). */
+    if (!SC.raceDriven && !SC.still && !SC.raceIO) {
+      const drive = () => { SC.raceDriven = true; requestAnimationFrame(() => { for (const c of el.querySelectorAll('.car[data-to]')) { c.classList.add('drive'); c.style.left = c.dataset.to + '%'; } }); };
+      if (!('IntersectionObserver' in window)) drive();
+      else { SC.raceIO = new IntersectionObserver((ents) => { if (ents.some((x) => x.isIntersecting)) { SC.raceIO.disconnect(); drive(); } }, { threshold: 0.4 }); SC.raceIO.observe(el); }
+    }
   });
   dash.draw('champfoot', (el) => {
     const c = champ(); if (!c) { el.textContent = '—'; return; }
